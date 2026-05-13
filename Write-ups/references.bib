@@ -1,0 +1,111 @@
+@techreport{Branlard2025notes,
+  author      = {Branlard, E.},
+  title       = {Lecture Notes on Wind Turbine Structural Dynamics},
+  institution = {University of Massachusetts Amherst},
+  year        = {2025},
+  address     = {Amherst, MA},
+  *note        = {These lecture materials provide a foundational overview of the mechanics required to model wind turbine structural dynamics, specifically covering Lagrange’s equations, the separation of space and time using shape functions, and linearization techniques. The text details the derivation of equations of motion for discrete and continuous systems, including specific derivations for tower and blade models, and introduces the concept of geometric stiffening and centrifugal effects. This source is practically useful as a technical handbook for the methodology section.It explicitly walks through the mathematical derivations I plan to perform. It will serve as a primary reference for ensuring the accuracy of the Lagrange formulations and understanding the kinematic relationships necessary to model the second tower mode effectively.}
+}
+
+@article{hansen2003improved,
+  title     = {Improved modal dynamics of wind turbines to avoid stall-induced vibrations},
+  author    = {Hansen, Morten H},
+  journal   = {Wind Energy: An International Journal for Progress and Applications in Wind Power Conversion Technology},
+  volume    = {6},
+  number    = {2},
+  pages     = {179--195},
+  year      = {2003},
+  publisher = {Wiley Online Library},
+  *note      = {In this article, Hansen performs a theoretical modal analysis of a three-bladed turbine using a multi-blade coordinate transformation to explain differences in aerodynamic damping between forward and backward whirling modes. The study focuses on stall-induced edgewise vibrations and demonstrates how structural dynamics can be tailored to improve damping characteristics. This source is relevant for understanding the interaction between blade modes and the remaining turbine structure, which is critical when analyzing the second tower mode. It is particularly useful for its explanation of how rotational speed splits frequencies (whirling modes), a phenomenon encountered when plotting frequency trends against rotational speed.}
+}
+
+@article{hansen2004aeroelastic,
+  title     = {Aeroelastic stability analysis of wind turbines using an eigenvalue approach},
+  author    = {Hansen, MH},
+  journal   = {Wind Energy: An International Journal for Progress and Applications in Wind Power Conversion Technology},
+  volume    = {7},
+  number    = {2},
+  pages     = {133--143},
+  year      = {2004},
+  publisher = {Wiley Online Library},
+  *note      = {This paper introduces HAWCStab, a design tool that couples a Finite Beam Element Method with Blade Element Momentum (BEM) theory to perform stability analysis. Hansen details the process of linearizing equations of motion about a steady-state equilibrium and solving the resulting eigenvalue problem to extract natural frequencies, damping, and mode shapes. This is a seminal text as it establishes the standard "eigenvalue approach" mentioned in the project description. It provides high-quality theoretical backing for the intended method of linearization and will help understand the standard industry approach to eliminating periodic coefficients in rotating systems to facilitate eigenanalysis.}
+}
+
+@article{hansen2006two,
+  title     = {Two methods for estimating aeroelastic damping of operational wind turbine modes from experiments},
+  author    = {Hansen, Morten Hartvig and Thomsen, Kenneth and Fuglsang, Peter and Knudsen, Torben},
+  journal   = {Wind Energy: An International Journal for Progress and Applications in Wind Power Conversion Technology},
+  volume    = {9},
+  number    = {1-2},
+  pages     = {179--191},
+  year      = {2006},
+  publisher = {Wiley Online Library},
+  *note      = {This research compares two experimental methods. These include excitation by external forces and stochastic subspace identification (operational modal analysis) for estimating modal damping in operating wind turbines. The authors specifically identify the frequencies and damping of tower modes and edgewise whirling modes, discussing the difficulties in exciting pure modal vibrations. This source is valuable for its focus on operational damping, providing context on how calculated theoretical damping values might compare to real-world experimental data. It is particularly relevant for its discussion of tower modes, helping understand the physical reality of the "second tower mode".}
+}
+
+@article{hansen2007aeroelastic,
+  title     = {Aeroelastic instability problems for wind turbines},
+  author    = {Hansen, Morten H},
+  journal   = {Wind Energy: An International Journal for Progress and Applications in Wind Power Conversion Technology},
+  volume    = {10},
+  number    = {6},
+  pages     = {551--577},
+  year      = {2007},
+  publisher = {Wiley Online Library},
+  *note      = {A comprehensive review of aeroelastic instabilities, this paper categorizes major issues into stall-induced vibrations and classical flutter, deriving analytical stability limits for typical blade sections. It synthesizes previous work to explain how parameters like blade tip speed and torsional stiffness influence stability limits. This source is excellent for the introduction of the literature review, as it frames the "why" behind the research, wind energy generation stability. It provides a high-quality qualitative understanding of instability mechanisms, which will help interpret the trends in frequency and damping generated from computational models.}
+}
+
+@inproceedings{hansen2011aeroelastic,
+  title     = {Aeroelastic properties of backward swept blades},
+  author    = {Hansen, Morten},
+  booktitle = {49th AIAA aerospace sciences meeting including the new horizons forum and aerospace exposition},
+  pages     = {260},
+  year      = {2011},
+  *note      = {This conference paper investigates how the geometric coupling between torsion and flapwise bending in backward swept blades affects aeroelastic properties using a beam element formulation. It utilizes a linearization of the aeroelastic model to compute eigenvalues (frequencies and damping) and transfer functions. While the specific focus is on swept blades, the methodology, linearizing a non-linear co-rotational beam model to perform eigenvalue analysis, mirrors the proposed method. It is useful as a reference for how geometric couplings (which might arise in complex tower-turbine interactions) can alter frequency and damping trends, ensuring the model accounts for necessary geometric non-linearities.}
+}
+
+@article{branlard2022symbolic,
+  title     = {A symbolic framework for flexible multibody systems applied to horizontal axis wind turbines},
+  author    = {Branlard, Emmanuel and Geisler, Jens},
+  journal   = {Wind Energy Science Discussions},
+  volume    = {2021},
+  pages     = {1--27},
+  year      = {2021},
+  publisher = {G{\"o}ttingen, Germany},
+  *note      = {This article presents "YAMS," a Python-based symbolic framework for deriving equations of motion for flexible multibody systems using Kane’s method and the Rayleigh-Ritz approximation. The authors explicitly address the need for models with variable levels of fidelity that can be analytically linearized for control and stability analysis, comparing their results against OpenFAST simulations for validation. This source is of the highest relevance and quality for the thesis, as it provides a direct methodological blueprint for proposed project. Since I intend to use symbolic computation to handle increasing system complexity, this paper demonstrates exactly how to implement such a framework to generate mass, stiffness, and damping matrices. It will be instrumental in helping structure the code for symbolic derivation and understanding the trade-offs between model complexity and fidelity, particularly regarding the nonlinear shape function approach.}
+}
+
+@article{branlard2019flexible,
+  title     = {Flexible multibody dynamics using joint coordinates and the Rayleigh-Ritz approximation: The general framework behind and beyond Flex},
+  author    = {Branlard, Emmanuel Simon Pierre},
+  journal   = {Wind Energy},
+  volume    = {22},
+  number    = {7},
+  pages     = {877--893},
+  year      = {2019},
+  publisher = {Wiley Online Library},
+  *note      = {This article establishes the theoretical framework for flexible multibody dynamics using joint coordinates and the Rayleigh-Ritz approximation, which is the specific modeling approach I plan to utilize. It details how to construct equations of motion with a minimal number of degrees of freedom by selecting appropriate shape functions, a method that aligns directly with the goal of creating efficient, symbolic models. The paper discusses specific treatments for thin beams, the inclusion of torsion, and recursive formulations for open-loop systems, providing mathematical rigor to the “shape function” approach. It is highly relevant to the work on the second tower mode, as it demonstrates how to model flexible bodies (like towers and blades) without the high computational cost of full finite element methods. This source is essential for justifying methodological choices and understanding the mathematical underpinnings of the reduced-order models.}
+}
+
+@article{riva2013analytical,
+  title     = {Analytical and numerical periodic stability analysis of wind turbines},
+  author    = {RIVA, RICCARDO},
+  year      = {2012},
+  publisher = {Politecnico di Milano},
+  *note      = {This thesis provides a rigorous comparison between the Floquet theory and the Coleman approximation for periodic stability analysis, utilizing both a simplified analytical model and a detailed multibody model. It addresses the derivation of equations of motion, periodic linearization, and the generation of periodic Campbell diagrams, all of which are central to the proposed methodology. The thesis is particularly relevant because it explicitly deals with the trade-offs between model complexity and analytical accuracy, mirroring the plan to create models with different levels of complexity. It serves as an excellent guide for structuring stability analysis and understanding the limitations of different linearization techniques when applied to the periodic systems inherent in wind energy.}
+}
+
+@article{Desalegn2023onshore,
+  title    = {Onshore versus offshore wind power trends and recent study practices in modeling of wind turbines' life-cycle impact assessments},
+  journal  = {Cleaner Engineering and Technology},
+  volume   = {17},
+  pages    = {100691},
+  year     = {2023},
+  issn     = {2666-7908},
+  doi      = {https://doi.org/10.1016/j.clet.2023.100691},
+  url      = {https://www.sciencedirect.com/science/article/pii/S2666790823000964},
+  author   = {Belachew Desalegn and Desta Gebeyehu and Bimrew Tamrat and Tassew Tadiwose and Ababa Lata},
+  *keywords = {Onshore & offshore systems, Capacity factor, Levelized cost of energy, Life-cycle impact assessment modeling},
+  *abstract = {Wind energy has gradually become one of the most efficient and reliable forms of sustainable energy, and it is being globally utilized to accelerate the expansion of green power production. However, recent projections of onshore & offshore wind energy systems indicate that further improvements are continuously required in terms of the deployments, capacity factors, costs, etc. to achieve an optimal wind power generation. According to these projections, the most critical current issue is the offshore systems' high levelized cost of energy, which demands the enhancements of the technologies to ensure the cost reduction in the future. Moreover, a number of reports are underscoring that offshore power systems can also leave a larger carbon footprints through their life-cycles compared to the onshore counterpart. On the other hand, the modelling methods of the power plants' life-cycle impact assessment (LCIA) have nowadays become among the most compelling research problems in the field of wind power systems engineering. In addition to comparatively assessing the characteristics of onshore & offshore energy systems based on some reports & studies, this work is therefore aimed at rigorously exploring the existing study practices in modelling the wind power plants' LCIA. A number of these practices were based on the implementation of various conventional modelling methods that may not help to make accurate assessments of the wind power plants’ life-cycle impacts. Hence, one of the main contributions of this study is to summarize a novel LCIA modelling approach based on Internet of Things (IoT) and predictive digital twin technologies. Unlike the conventional methods, real-time data extraction from the power plants makes these technologies possible to conduct the most accurate assessments of the life-cycle impacts.},
+  *note     = {This review article compares onshore and offshore wind energy systems, focusing on capacity factors, levelized cost of energy (LCOE), and life-cycle impact assessments. It highlights the industry shift toward offshore locations due to higher power density, despite the increased costs and environmental footprint. This source is valuable for the Introduction and Motivation sections of the thesis; it substantiates the rationale for focusing on larger, offshore-style turbines where complex structural dynamics (like the second tower mode) become critical limiting factors for efficiency and reliability.}
+}

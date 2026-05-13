@@ -1,0 +1,34 @@
+\begin{thebibliography}{1}
+
+\bibitem{Desalegn2023onshore}
+B.~Desalegn, D.~Gebeyehu, B.~Tamrat, T.~Tadiwose, and A.~Lata, ``Onshore versus
+  offshore wind power trends and recent study practices in modeling of wind
+  turbines' life-cycle impact assessments,'' {\em Cleaner Engineering and
+  Technology}, vol.~17, p.~100691, 2023.
+
+\bibitem{hansen2007aeroelastic}
+M.~H. Hansen, ``Aeroelastic instability problems for wind turbines,'' {\em Wind
+  Energy: An International Journal for Progress and Applications in Wind Power
+  Conversion Technology}, vol.~10, no.~6, pp.~551--577, 2007.
+
+\bibitem{hansen2003improved}
+M.~H. Hansen, ``Improved modal dynamics of wind turbines to avoid stall-induced
+  vibrations,'' {\em Wind Energy: An International Journal for Progress and
+  Applications in Wind Power Conversion Technology}, vol.~6, no.~2,
+  pp.~179--195, 2003.
+
+\bibitem{Branlard2025notes}
+E.~Branlard, ``Lecture notes on wind turbine structural dynamics,'' tech. rep.,
+  University of Massachusetts Amherst, Amherst, MA, 2025.
+
+\bibitem{branlard2019flexible}
+E.~S.~P. Branlard, ``Flexible multibody dynamics using joint coordinates and
+  the rayleigh-ritz approximation: The general framework behind and beyond
+  flex,'' {\em Wind Energy}, vol.~22, no.~7, pp.~877--893, 2019.
+
+\bibitem{branlard2022symbolic}
+E.~Branlard and J.~Geisler, ``A symbolic framework for flexible multibody
+  systems applied to horizontal axis wind turbines,'' {\em Wind Energy Science
+  Discussions}, vol.~2021, pp.~1--27, 2021.
+
+\end{thebibliography}
