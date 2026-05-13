@@ -8,6 +8,7 @@
 \usepackage{setspace}
 \usepackage{totcount}
 \usepackage{comment}
+\usepackage{listings}
 \usepackage{tikz}
 \usetikzlibrary{calc,patterns,angles,quotes,decorations.pathmorphing}
 % Load tikz before standard LaTeX packages like graphicx
@@ -190,64 +191,57 @@ From January through March, I will continue work on the Honors Thesis, ensuring 
 \section{Methodology}
 
 \subsection{Symbolic Derivation Pipeline}
-To systematically generate the equations of motion for the multi-body wind turbine models, this project utilizes a custom symbolic derivation pipeline built upon the Python \texttt{sympy.physics.mechanics} module. The workflow begins by defining the system's reference frames, point locations, and generalized coordinates ($q(t)$). 
-
-Once the kinematics are established, the kinetic energy ($\mathcal{T}$) and potential energy ($\mathcal{V}$) of the system are constructed symbolically. The pipeline then evaluates the Euler-Lagrange equations:
+The equations of motion for the wind turbine models are generated through a symbolic derivation pipeline built on the Python \texttt{sympy.physics.mechanics} module. The workflow begins by defining the system's reference frames, point locations, and generalized coordinates ($q(t)$), after which the kinetic energy ($\mathcal{T}$) and potential energy ($\mathcal{V}$) are constructed symbolically. The pipeline then evaluates the Euler-Lagrange equations,
 \begin{equation}
-    \frac{d}{dt}\left(\frac{\partial\mathcal{L}}{\partial\dot{q}_{i}}\right)-\frac{\partial\mathcal{L}}{\partial q_{i}}=Q_{i,nc}
+    \frac{d}{dt}\left(\frac{\partial\mathcal{L}}{\partial\dot{q}_{i}}\right)-\frac{\partial\mathcal{L}}{\partial q_{i}}=Q_{i,nc},
 \end{equation}
-Because deriving these equations manually becomes intractable for systems with 3D rotational kinematics and flexible bodies, the symbolic pipeline automatically executes the partial differentiation and algebraic simplification. Finally, the pipeline extracts the acceleration terms ($\ddot{q}$) to rearrange the highly non-linear ordinary differential equations into the standard matrix form:
+automatically executing the required partial differentiation and algebraic simplification—steps that become quite difficult to complete by hand for systems involving complex three-dimensional rotational kinematics and flexible bodies. The acceleration terms ($\ddot{q}$) are then extracted to recast the nonlinear ordinary differential equations into standard matrix form:
 \begin{equation}
-    M(q,t)\ddot{q} = F(q,\dot{q},t)
+    M(q,t)\ddot{q} = F(q,\dot{q},t).
 \end{equation}
-This automated generation creates a ``glass-box'' model where the explicit symbolic relationships between mass, geometry, and rotation are perfectly preserved for analysis.
+Because the symbolic relationships between mass, geometry, and rotation are preserved exactly throughout this process, the resulting model is fully transparent to inspection and analysis.
 
 \begin{lstlisting}[language=Python, caption=Simplified SymPy Derivation Pipeline]
 # Define Lagrangian from kinetic and potential energy
 L = Lagrangian(N, Nacelle, Blade)
-
 # Apply Lagrange's Method with non-conservative aerodynamic forces
 LM = LagrangesMethod(L, [theta, psi, q], frame=N, forcelist=forces)
-
 # Generate Equations of Motion
 eom = LM.form_lagranges_equations()
-
 # Extract Mass Matrix and Forcing Vector
 M_sym = LM.mass_matrix
 F_sym = LM.forcing
 \end{lstlisting}
 
 \subsection{Linearization Procedure}
-While the nonlinear $M$ and $F$ matrices accurately describe the system's large-deflection dynamics, conducting a frequency and stability analysis requires linearizing these equations of motion about a steady operating point. For the models in this thesis, the equilibrium state ($q_0$) is defined by a constant nacelle tilt ($\theta_0$), a constant rotor speed ($\dot{\psi} = \Omega$), and zero initial blade deflection ($q_0 = 0$). 
-
-The system's dynamics are evaluated by applying a small perturbation ($\delta q$) around this equilibrium:
+Although the nonlinear matrices $M$ and $F$ accurately capture the system's large-deflection dynamics, frequency and stability analysis requires linearization about a steady operating point. The equilibrium state ($q_0$) is defined by a constant nacelle tilt ($\theta_0$), a constant rotor speed ($\dot{\psi} = \Omega$), and zero initial blade deflection ($q_0 = 0$). A small perturbation ($\delta q$) is then superimposed on this equilibrium,
 \begin{equation}
-    q(t) = q_0 + \delta q(t)
+    q(t) = q_0 + \delta q(t),
 \end{equation}
-Substituting this perturbed state into the nonlinear equations and performing a first-order Taylor series expansion yields the linearized equations of motion:
+and substituting this perturbed state into the nonlinear equations and retaining only first-order terms yields the linearized equations of motion:
 \begin{equation}
-    M\delta\ddot{q} + C\delta\dot{q} + K\delta q = 0
+    M\delta\ddot{q} + C\delta\dot{q} + K\delta q = 0.
 \end{equation}
-In this linear form, the mass matrix ($M$) represents the inertial properties of the system. The stiffness matrix ($K$) captures the structural elasticity as well as centrifugal and gravitational stiffening effects. Crucially, the damping matrix ($C$) contains both the structural and aerodynamic damping terms, alongside the skew-symmetric gyroscopic matrix generated by the rotating rotor. The interaction between the terms in these matrices—particularly the negative aerodynamic damping that occurs during stall—governs the aeroelastic instability of the turbine.
+Here, the mass matrix ($M$) represents the inertial properties of the system, and the stiffness matrix ($K$) encodes both structural elasticity and centrifugal and gravitational stiffening effects. The damping matrix ($C$) collects structural and aerodynamic damping contributions alongside the skew-symmetric gyroscopic terms arising from rotor rotation. The interplay among these matrices—in particular, the negative aerodynamic damping that develops during stall—governs the onset of aeroelastic instability.
 
 \subsection{Eigenvalue Analysis}
-To extract the physical frequencies and damping characteristics from the linearized system, the second-order matrix equation is converted into a first-order state-space formulation:
+To extract natural frequencies and modal damping characteristics from the linearized system, the second-order matrix equation is recast as a first-order state-space system,
 \begin{equation}
-    \dot{x} = Ax
+    \dot{x} = Ax,
 \end{equation}
-where the state vector is defined as $x = [\delta q, \delta\dot{q}]^T$, and the state matrix $A$ is constructed as:
+where the state vector $x = [\delta q,\, \delta\dot{q}]^T$ and the state matrix is
 \begin{equation}
-    A = \begin{bmatrix} 0 & I \\ -M^{-1}K & -M^{-1}C \end{bmatrix}
+    A = \begin{bmatrix} 0 & I \\ -M^{-1}K & -M^{-1}C \end{bmatrix}.
 \end{equation}
-By computing the eigenvalues ($\lambda$) of the $A$ matrix, the dynamic response of the system can be isolated. The complex eigenvalues take the form:
+The eigenvalues ($\lambda$) of $A$ take the complex form
 \begin{equation}
-    \lambda = \sigma \pm i\omega_d
+    \lambda = \sigma \pm i\omega_d,
 \end{equation}
-The imaginary component ($\omega_d$) represents the damped natural frequency of the mode, while the real component ($\sigma$) dictates the decay rate. The damping ratio ($\zeta$) is then calculated as:
+where the imaginary part ($\omega_d$) is the damped natural frequency and the real part ($\sigma$) is the modal decay rate. The damping ratio follows as
 \begin{equation}
-    \zeta = \frac{-\sigma}{\sqrt{\sigma^2 + \omega_d^2}}
+    \zeta = \frac{-\sigma}{\sqrt{\sigma^2 + \omega_d^2}}.
 \end{equation}
-To uncover the fundamental trends governing the wind turbine's behavior, this eigenvalue analysis is placed within a loop, systematically sweeping through a range of rotor speeds ($\Omega$) and wind velocities ($V$). The resulting frequencies and damping ratios are plotted to visualize phenomena such as frequency splitting and negative damping. Finally, to ensure the validity of the analytical model, these outputs are benchmarked against the eigenvalues generated by high-fidelity OpenFAST (ElastoDyn/AeroDyn) simulations under identical operating conditions.
+This eigenvalue analysis is embedded in a parametric sweep over rotor speed ($\Omega$) and wind velocity ($V$), and the resulting frequencies and damping ratios are plotted to expose phenomena such as frequency veering and negative damping. The analytical predictions are then benchmarked against eigenvalues computed by high-fidelity OpenFAST (ElastoDyn/AeroDyn) simulations at identical operating conditions to validate the model.
 
 \section{Analysis and Results}
 To achieve the objectives of this thesis, I will be using the sympy library in Python to perform the symbolic derivation of the equations of motion. This process will begin with a familiarization of the library with progressively more complex systems. A systematic approach is used to ensure the accuracy of the derivations, starting with simple systems and building up to more complicated models that incorporate flexibility and rotation. This methodical approach allows for the validation of the framework at each step.
@@ -255,7 +249,9 @@ To achieve the objectives of this thesis, I will be using the sympy library in P
 The equations of motion for five models were generated and validated against benchmarks. These models include the \hyperref[app:simple_pendulum]{Simple Pendulum}, a chaotic \hyperref[app:double_pendulum]{Double Pendulum}, a 2-DOF \hyperref[app:pendulum_cart]{Single Blade Pendulum on a Cart}, a \hyperref[app:fixed_nacelle_flex_blade]{Fixed Nacelle with a Flexible Rotating Blade}, and a \hyperref[app:flex_tower_rigid_blade]{Flexible Tower with a Rotating Rigid Blade}. Following validation, the pipeline that was developed while deriving these models was applied to derive two additional models. These models were the \hyperref[sec:tilting_nacelle_rigid_blade]{Tilting Nacelle with a Rigid Rotating Blade} and the \hyperref[sec:tilting_nacelle_flex_blade]{Tilting Nacelle with a Flexible Rotating Blade}. The following sections provide a detailed description of the derivation process for each of these models.
 
 \subsection{Tilting Nacelle, Rigid Blade}\label{sec:tilting_nacelle_rigid_blade}
-Building upon the previous models, a tilting nacelle model was derived to capture the structural dynamics of a tower with a pitching degree of freedom. This model includes a rotational DOF ($\theta$) representing the fore-aft tilt of the nacelle about a pivot point $O$, and a rotational degree of freedom ($\psi$) representing the azimuth of the blade relative to the nacelle.
+\subsubsection{Model Description and Degrees of Freedom}
+
+The tilting nacelle model captures the structural dynamics of a tower-top assembly with two degrees of freedom: a fore-aft tilt angle $\theta$ representing rotation in the x-z plane of the nacelle about the pivot point $O$, and an azimuth angle $\psi$ representing rotation of the rigid blade relative to the nacelle. A schematic of the model, including coordinate frames and mass locations, is shown in Fig.~\ref{fig:tilting_nacelle_tower_top}.
 
 \begin{figure}[htbp]
     \centering
@@ -267,81 +263,153 @@ Building upon the previous models, a tilting nacelle model was derived to captur
         \def\nacH{1.2}
         \def\bladeL{3.5}
         \def\psiAngle{40}
-
         % Inertial Frame N
         \draw[->, gray!70, thick] (-3.8, 2.2) -- ++(0.5, 0) node[right] {\tiny $x_N$};
         \draw[->, gray!70, thick] (-3.8, 2.2) -- ++(0, 0.5) node[above] {\tiny $z_N$};
         \draw[->, gray!70, thick] (-3.8, 2.2) -- ++(-0.25, -0.25) node[below left] {\tiny $y_N$};
-
         % --- 2. Tower Base and Pivot ---
         \draw[thick, gray!80] (0, -\towerH) -- (0, 0);
         \draw[dashed, gray!50] (0, 0) -- (0, 2.5);
-
         \coordinate (O) at (0,0);
         \fill (O) circle (2pt) node[below right=2pt] {$O$};
-
         % --- 3. Tilted Scope ---
         \begin{scope}[rotate around={-\tiltAngle:(O)}]
             \draw[thick, fill=gray!10] (-\nacW/2, 0) rectangle (\nacW/2, \nacH);
             \node at (0, 0.6) {$m_n$};
-
             \coordinate (Hub) at (-\nacW/2, \nacH/2);
             \fill (Hub) circle (2pt) node[above left=2pt] {$Hub$};
-
             \draw[dashed, gray!60] (Hub) ellipse (0.8 and 3.2);
             \coordinate (Tip) at ($(Hub) + (0, -3.2)$);
-
             \draw[fill=white, thick]
             ($(Hub)!0.08cm!90:(Tip)$) -- ($(Tip)!0.08cm!-90:(Hub)$) --
             ($(Tip)!0.08cm!90:(Hub)$) -- ($(Hub)!0.08cm!-90:(Tip)$) -- cycle;
             \node[below left] at (Tip) {$m_r$};
-
             \begin{scope}[shift={(Hub)}]
                 \draw[->, red!70!black, thick] (0, 0) -- ++(0.5, 0) node[right] {\tiny $x_R$};
                 \draw[->, red!70!black, thick] (0, 0) -- ++(0, 0.5) node[above] {\tiny $z_R$};
                 \draw[->, red!70!black, thick] (0, 0) -- ++(-0.25, -0.25) node[below left] {\tiny $y_R$};
             \end{scope}
         \end{scope}
-
         % Nacelle Frame
         \begin{scope}[shift={(0, 0)}, rotate around={-\tiltAngle:(0,0)}]
             \draw[->, blue!60, thick] (0, 0) -- ++(0.5, 0) node[above] {\tiny $x_{nac}$};
             \draw[->, blue!60, thick] (0, 0) -- ++(0, 0.5) node[left] {\tiny $z_{nac}$};
             \draw[->, blue!60, thick] (0, 0) -- ++(-0.25, -0.25) node[below left] {\tiny $y_{nac}$};
         \end{scope}
-
         % --- 4. Annotations ---
         \draw[->, thick, darkgray] (0, 2.0) arc (90:{90-\tiltAngle}:2.0);
         \node[darkgray] at (0.3, 2.2) {$\theta$};
     \end{tikzpicture}
-    \caption{Schematic of the Tilting Nacelle model showing coordinate frames and mass positions.}
+    \caption{Schematic of the tilting nacelle model showing coordinate frames, pivot point $O$, and mass locations.}
     \label{fig:tilting_nacelle_tower_top}
 \end{figure}
 
-The system defines the nacelle center of mass at offsets $(X_n, Z_n)$ and the hub at $(X_h, Z_h)$ relative to the pivot, with the rotor center of mass at radius $Z_r$. Inertial properties include the nacelle assembly ($J_{yyN}$) and the rotor principle inertias ($J_{xxR}, J_{yyR}, J_{zzR}$). The resulting mass matrix $M$ and forcing vector $F$ uniquely capture the centrifugal stiffening and gravitational restoring moments in their full symbolic forms:
+The nacelle center of mass is located at offsets $(X_n, Z_n)$ from the pivot, the hub at $(X_h, Z_h)$, and the rotor center of mass at radius $Z_r$ from the hub. The inertial parameters used throughout this analysis are listed in Table~\ref{tab:model1_params}.
+
+% ---------------------------------------------------------------
+% TABLE: Insert your printed parameter values from the code here.
+% Replace the example rows with the actual values output by your
+% notebook (rotor mass, nacelle mass, inertias, hub geometry, etc.)
+% ---------------------------------------------------------------
+\begin{table}[htbp]
+    \centering
+    \caption{Model 1 inertial and geometric parameters.}
+    \label{tab:model1_params}
+    \begin{tabular}{llll}
+        \hline
+        Parameter & Symbol & Value & Units \\
+        \hline
+        Rotor mass           & $m_b$     & \texttt{<value>} & kg      \\
+        Nacelle mass         & $m_n$     & \texttt{<value>} & kg      \\
+        Nacelle yaw inertia  & $J_{yyN}$ & \texttt{<value>} & kg\,m$^2$ \\
+        Rotor inertia ($xx$) & $J_{xxR}$ & \texttt{<value>} & kg\,m$^2$ \\
+        Rotor inertia ($yy$) & $J_{yyR}$ & \texttt{<value>} & kg\,m$^2$ \\
+        Rotor inertia ($zz$) & $J_{zzR}$ & \texttt{<value>} & kg\,m$^2$ \\
+        Hub offset ($x$)     & $X_h$     & \texttt{<value>} & m       \\
+        Hub offset ($z$)     & $Z_h$     & \texttt{<value>} & m       \\
+        \hline
+    \end{tabular}
+\end{table}
 
 
-The mass matrix $M$ and forcing vector $F$ for the tilting nacelle model are expressed below in their full symbolic forms.
+\subsubsection{Linearized Equations of Motion}
+\label{sec:model1_linearization}
+
+The nonlinear mass matrix $M(q,t)$ and forcing vector $F(q, \dot{q}, t)$ derived symbolically in Section~\ref{sec:tilting_nacelle_rigid_blade} are linearized about the equilibrium state $(\theta_0,\, \dot{\psi} = \Omega,\, \delta q = 0)$ to yield the constant-coefficient system
 
 \begin{equation}
-    \label{eq:tilting_mass_matrix_downwind}
-    \resizebox{0.95\textwidth}{!}{%
-        $M = \begin{bmatrix}
-                J_{yyb} \cos^{2}\psi + J_{yyn} + J_{zzb} \sin^{2}\psi + m_{b} (X_{h}^{2} + Z_{b}^{2} \cos^{2}\psi + 2 Z_{b} Z_{h} \cos\psi + Z_{h}^{2}) + m_{n} (X_{n}^{2} + Z_{n}^{2}) & - X_{h} Z_{b} m_{b} \sin\psi \\
-                - X_{h} Z_{b} m_{b} \sin\psi                                                                                                                                            & J_{xxb} + Z_{b}^{2} m_{b}
-            \end{bmatrix}$%
-    }
+    M_0\,\delta\ddot{q} + C_0\,\delta\dot{q} + K_0\,\delta q = 0,
+    \label{eq:model1_linearized}
 \end{equation}
 
+where $q = [\theta,\, \psi]^T$. The three coefficient matrices evaluated at the operating point are:
+
+% ---------------------------------------------------------------
+% OUTPUT: Insert the printed/symbolic linearized M, C, K matrices
+% output by your notebook's linearization cell here. Replace the
+% placeholder entries with the actual symbolic or numerical terms.
+% ---------------------------------------------------------------
+
 \begin{equation}
-    \label{eq:tilting_forcing_terms_downwind}
-    \resizebox{0.95\textwidth}{!}{%
-        $F = \begin{bmatrix}
-                (J_{yyb} - J_{zzb} + Z_{b}^{2} m_{b}) \sin(2\psi) \dot{\psi} \dot{\theta} + X_{h} Z_{b} m_{b} \cos\psi \dot{\psi}^{2} + (X_{h} m_{b} + X_{n} m_{n}) g \cos\theta + 2 Z_{b} Z_{h} m_{b} \sin\psi \dot{\psi} \dot{\theta} + \frac{Z_{b} g m_{b} \sin(\psi - \theta)}{2} - \frac{Z_{b} g m_{b} \sin(\psi + \theta)}{2} - (Z_{h} m_{b} + Z_{n} m_{n}) g \sin\theta - c_{t} \dot{\theta} - k_{t} \theta \\
-                \left(- J_{yyb} \cos\psi \dot{\theta}^{2} + J_{zzb} \cos\psi \dot{\theta}^{2} - Z_{b}^{2} m_{b} \cos\psi \dot{\theta}^{2} - Z_{b} Z_{h} m_{b} \dot{\theta}^{2} - Z_{b} g m_{b} \cos\theta \right) \sin\psi
-            \end{bmatrix}$%
-    }
+    M_0 = \begin{bmatrix} M_{11} & M_{12} \\ M_{21} & M_{22} \end{bmatrix},
+    \quad
+    C_0 = \begin{bmatrix} C_{11} & C_{12} \\ C_{21} & C_{22} \end{bmatrix},
+    \quad
+    K_0 = \begin{bmatrix} K_{11} & K_{12} \\ K_{21} & K_{22} \end{bmatrix}.
+    \label{eq:model1_MCK}
 \end{equation}
+
+Several features of these matrices warrant physical interpretation. The off-diagonal entries of $C_0$ are skew-symmetric—that is, $C_{12} = -C_{21}$—and scale linearly with $\Omega$; these are the gyroscopic coupling terms generated by the spinning rotor, which transfer energy between the tilt and azimuth modes. In the stiffness matrix $K_0$, the diagonal entry $K_{11}$ contains both the structural restoring stiffness $k_t$ and a gravitational term proportional to $g\cos\theta_0$; the latter increases the effective stiffness in the upright position and represents gravitational stiffening of the tilt mode. A centrifugal stiffening contribution proportional to $\Omega^2$ also appears in $K_{11}$, causing the tilt natural frequency to rise with rotor speed as discussed in Section~\ref{sec:model1_freq}.
+
+\subsubsection{Frequency Analysis}
+\label{sec:model1_freq}
+
+The natural frequencies of the linearized system are obtained by computing the eigenvalues of the state matrix $A$ over a swept range of rotor speeds $\Omega$, as described in Section~\ref{sec:methodology_eigenvalue}. Fig.~\ref{fig:model1_freq_vs_omega} shows the resulting frequency diagram.
+
+% ---------------------------------------------------------------
+% FIGURE: Insert the frequency-vs-rotor-speed plot generated by
+% your eigenvalue sweep cell here. Typical filename from a notebook
+% might be something like 'freq_vs_omega_model1.pdf' or '.png'.
+% ---------------------------------------------------------------
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\textwidth]{figures/freq_vs_omega_model1}
+    \caption{Natural frequencies of the tilt mode ($\theta$) and azimuth mode ($\psi$) as a function of rotor speed $\Omega$ for Model 1. Forward and backward whirl branches are labeled.}
+    \label{fig:model1_freq_vs_omega}
+\end{figure}
+
+At zero rotor speed, the two modes are degenerate and share a common natural frequency set by the structural stiffness and system inertia. As $\Omega$ increases, gyroscopic coupling breaks this degeneracy and the two branches diverge: the forward whirl branch—in which the tilt precession is co-directional with rotor spin—rises in frequency, while the backward whirl branch falls. This frequency splitting is a classical consequence of the gyroscopic terms in $C_0$ and grows in proportion to $\Omega$. Simultaneously, the centrifugal stiffening term in $K_{11}$ causes a gradual upward shift in the mean tilt frequency, which is visible as an upward bias of both branches relative to their zero-speed values.
+
+\subsubsection{Damping Analysis}
+\label{sec:model1_damping}]
+
+Fig.~\ref{fig:model1_damping_vs_wind} shows the damping ratio $\zeta$ of the tilt mode as a function of wind speed $V$ at a representative rotor speed.
+
+% ---------------------------------------------------------------
+% FIGURE: Insert the damping-ratio-vs-wind-speed plot generated by
+% your aerodynamic damping sweep cell here. Typical filename might
+% be 'damping_vs_wind_model1.pdf' or '.png'.
+% ---------------------------------------------------------------
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\textwidth]{figures/damping_vs_wind_model1}
+    \caption{Damping ratio $\zeta$ of the tilt mode as a function of wind speed $V$ for Model 1. The horizontal dashed line marks $\zeta = 0$.}
+    \label{fig:model1_damping_vs_wind}
+\end{figure}
+
+At low wind speeds, aerodynamic damping augments the structural damping and the tilt mode remains well-damped. As wind speed increases toward stall, the slope of the lift curve $\partial C_L / \partial \alpha$ diminishes and eventually becomes negative (see Section~\ref{sec:aero_model}). Because aerodynamic damping is proportional to this slope, the total damping in $C_0$ decreases monotonically with wind speed beyond this point. The model predicts that $\zeta$ crosses zero at approximately $V = \texttt{<value>}$\,m/s (indicated in Fig.~\ref{fig:model1_damping_vs_wind}), beyond which the tilt mode is aeroelastically unstable. This onset is consistent with the negative-damping mechanism described in Section~\ref{sec:aero_model}: once the rotor operates in the stall regime, perturbations in tilt angle produce aerodynamic forces that amplify rather than oppose the motion.
+
+% ---------------------------------------------------------------
+% OUTPUT (optional): If your notebook prints a table of critical
+% wind speeds or a summary of damping values at specific operating
+% points, insert that printed output here as a table or verbatim
+% block, or fold the numbers directly into the text above.
+% ---------------------------------------------------------------
+
+\subsubsection{Key Findings from Model 1}
+\label{sec:model1_findings}
+
+The tilting nacelle model demonstrates that gyroscopic coupling from the spinning rotor is the dominant mechanism driving frequency splitting between the forward and backward whirl branches, and that centrifugal stiffening produces a measurable increase in the tilt natural frequency with rotor speed. On the damping side, the model clearly identifies a critical wind speed beyond which aerodynamic stall drives the tilt mode unstable, establishing the physical link between rotor aerodynamics and structural instability. However, because the blade is treated as a rigid body, this model cannot account for the in-plane and out-of-plane flexibility modes of the blade or their coupling with the nacelle dynamics; capturing those effects—and the additional damping and frequency shifts they introduce—requires the flexible blade model presented in the following section.
 
 \subsection{Tilting Nacelle, Flexible Blade}\label{sec:tilting_nacelle_flex_blade}
 Combining the rigid 3D nacelle tilt dynamics with the approximation of a flexible blade establishes a 3-DOF aeroelastic skeleton. This architecture, consisting of nacelle pitch ($\theta$), rotor azimuth ($\psi$), and flapwise blade bending ($q$), is required to capture the massive coupling terms inducing aerodynamic instabilities.
