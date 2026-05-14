@@ -771,9 +771,18 @@ Finally, the assumed modes method in this thesis utilized only a single flapwise
 
 \section{Conclusion}
 \label{sec:conclusion}
-% Introductory Paragraph:
-%   - Briefly recap the primary motivation behind the thesis: The increasing scale of offshore wind turbines necessitates a deeper understanding of aeroelastic phenomena, specifically the complex coupling between structural flexibility and rotational dynamics.
-%   - State the core objective: To construct transparent, symbolic analytical models (using Lagrangian mechanics and the assumed modes method) that reveal the physical mechanisms driving instability, moving beyond the "black-box" numerical approaches typically employed in industry.
+
+The increasing scale and operational deployment of modern offshore wind turbines necessitate a profound, physically intuitive understanding of aeroelastic phenomena. As these structures grow larger, they inherently become more flexible, blurring the lines between rigid-body kinematics and structural dynamics. The primary objective of this thesis was to construct transparent, symbolic analytical models—leveraging Lagrangian mechanics and the assumed modes method—to reveal the physical mechanisms driving instability, moving beyond the "black-box" numerical approaches typically employed in industry.
+
+Through the development and simulation of the 2-DOF Rigid Blade model, this work successfully isolated the fundamental rigid-body coupling mechanisms inherent to a tower-top assembly. The symbolic derivation and resulting time-domain simulations demonstrated that a pitching nacelle induces substantial Coriolis accelerations that actively drive the rotor speed. This finding is critical, as it mathematically proves that aerodynamic thrust is not the sole governor of rotor dynamics during turbulent events; massive 3D kinematic coupling plays a dominant role in energy transfer. However, the rigid model’s limitation became equally clear: by treating the rotor as an infinitely stiff component, it failed to capture the structural modal interactions responsible for complex phenomena like stall-induced vibrations.
+
+This limitation motivated the expansion into the 3-DOF Flexible Blade model. By introducing a continuous modal deflection coordinate parameterized by a generalized mass ($GM_b$) and a rotational modal coupling integral ($M_{r\phi}$), the system's mass matrix was explicitly altered. The subsequent eigenvalue analysis confirmed the central hypothesis of this research: structural modes in wind turbines do not exist in isolation. The addition of blade flexibility subtly but definitively shifted the natural frequency of the entire tower-top assembly. Furthermore, nonlinear simulations visually confirmed that the flexible blade acts as a dynamic energy sink, actively coupling with the nacelle's motion and providing a pathway for structural resonance.
+
+Finally, this symbolic framework explicitly mapped the role of gyroscopic coupling. The continuous rotation of the massive rotor introduces velocity cross-terms ($\dot{\psi}\dot{\theta}$) that manifest as skew-symmetric, speed-dependent entries in the linearized damping matrix ($C_0$). These terms are mathematically responsible for frequency splitting, or "whirling," causing the natural frequencies of the coupled system to diverge as the turbine speeds up. 
+
+While the analytical approach provides unparalleled transparency, it is bounded by the "frozen-azimuth" assumption required for LTI state-space analysis. The rapid divergence of the linear simulations, particularly for highly sensitive flexible modes, highlights their inability to capture global transient behavior. Consequently, while these symbolic models provide crucial physical insights, the utilization of high-fidelity simulators like OpenFAST—capable of incorporating complete aerodynamic models and multi-blade coordinate transformations—remains a necessity for comprehensive design load cases. 
+
+Ultimately, by mathematically deriving and isolating these coupling mechanisms, this thesis contributes to a more transparent understanding of wind turbine aeroelasticity, providing the physical intuition required to safely design the next generation of resilient offshore wind energy systems.
 
 % Summary of Rigid Model Findings:
 %   - Reiterate the findings from Model 1 (2-DOF Tilting Nacelle, Rigid Blade).
