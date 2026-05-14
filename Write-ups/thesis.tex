@@ -16,6 +16,7 @@
 \graphicspath{{../figures/}}
 \usepackage[hidelinks]{hyperref}
 \usepackage{float}
+\usepackage{pdfpages}
 
 
 \bibliographystyle{ieeetr}
@@ -1065,13 +1066,37 @@ The equations of motion were derived by considering the kinetic energy of the fl
     }
 \end{equation}
 
-\subsection{Rigid Rotating Blade, Tilting Nacelle code}\label{app:RRBTNcode}
+\clearpage
+\includepdf[
+    pages={1}, 
+    scale=0.9, 
+    pagecommand={%
+        \thispagestyle{plain}%
+        \subsection{Rigid Rotating Blade, Tilting Nacelle code}\label{app:RRBTNcode}%
+    }
+]{onebladeTN.pdf}
 
-\subsection{Rigid Rotating Blade, Tilting Nacelle Parameters}\label{app:RRBTNparams}
+\includepdf[
+    pages={2-}, 
+    scale=0.9, 
+    pagecommand={\thispagestyle{plain}}
+]{onebladeTN.pdf}
 
-\subsection{Flexible Rotating Blade, Tilting Nacelle code}\label{app:FRBTNcode}
+\clearpage
+\includepdf[
+    pages={1}, 
+    scale=0.9, 
+    pagecommand={%
+        \thispagestyle{plain}%
+        \subsection{Flexible Rotating Blade, Tilting Nacelle code}\label{app:FRBTNcode}%
+    }
+]{onebladeTNflex.pdf}
 
-\subsection{Flexible Rotating Blade, Tilting Nacelle Parameters}\label{app:FRBTNparams}
+\includepdf[
+    pages={2-}, 
+    scale=0.9, 
+    pagecommand={\thispagestyle{plain}}
+]{onebladeTNflex.pdf}
 
 % --- Bibliography Section ---
 \newpage
