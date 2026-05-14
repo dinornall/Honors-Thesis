@@ -1,4 +1,4 @@
-\documentclass[draft,onecolumn,draftcls]{IEEEtran}
+\documentclass[final,onecolumn]{IEEEtran}
 
 % Required packages for math and citations
 \usepackage{amsmath, amssymb, amsfonts}
@@ -13,7 +13,9 @@
 \usetikzlibrary{calc,patterns,angles,quotes,decorations.pathmorphing}
 % Load tikz before standard LaTeX packages like graphicx
 \usepackage{graphicx}
+\graphicspath{{../figures/}}
 \usepackage[hidelinks]{hyperref}
+\usepackage{float}
 
 
 \bibliographystyle{ieeetr}
@@ -253,7 +255,8 @@ The equations of motion for five models were generated and validated against ben
 
 The tilting nacelle model captures the structural dynamics of a tower-top assembly with two degrees of freedom: a fore-aft tilt angle $\theta$ representing rotation in the x-z plane of the nacelle about the pivot point $O$, and an azimuth angle $\psi$ representing rotation of the rigid blade relative to the nacelle. A schematic of the model, including coordinate frames and mass locations, is shown in Fig.~\ref{fig:tilting_nacelle_tower_top}.
 
-\begin{figure}[htbp]
+
+\begin{figure}[H]
     \centering
     \begin{tikzpicture}[>=stealth, scale=1.2]
         % --- 1. Parameters ---
@@ -306,110 +309,179 @@ The tilting nacelle model captures the structural dynamics of a tower-top assemb
 
 The nacelle center of mass is located at offsets $(X_n, Z_n)$ from the pivot, the hub at $(X_h, Z_h)$, and the rotor center of mass at radius $Z_r$ from the hub. The inertial parameters used throughout this analysis are listed in Table~\ref{tab:model1_params}.
 
-% ---------------------------------------------------------------
-% TABLE: Insert your printed parameter values from the code here.
-% Replace the example rows with the actual values output by your
-% notebook (rotor mass, nacelle mass, inertias, hub geometry, etc.)
-% ---------------------------------------------------------------
-\begin{table}[htbp]
+\begin{table}[H]
     \centering
     \caption{Model 1 inertial and geometric parameters.}
     \label{tab:model1_params}
     \begin{tabular}{llll}
         \hline
-        Parameter & Symbol & Value & Units \\
+        Parameter                 & Symbol    & Value              & Units       \\
         \hline
-        Rotor mass           & $m_b$     & \texttt{<value>} & kg      \\
-        Nacelle mass         & $m_n$     & \texttt{<value>} & kg      \\
-        Nacelle yaw inertia  & $J_{yyN}$ & \texttt{<value>} & kg\,m$^2$ \\
-        Rotor inertia ($xx$) & $J_{xxR}$ & \texttt{<value>} & kg\,m$^2$ \\
-        Rotor inertia ($yy$) & $J_{yyR}$ & \texttt{<value>} & kg\,m$^2$ \\
-        Rotor inertia ($zz$) & $J_{zzR}$ & \texttt{<value>} & kg\,m$^2$ \\
-        Hub offset ($x$)     & $X_h$     & \texttt{<value>} & m       \\
-        Hub offset ($z$)     & $Z_h$     & \texttt{<value>} & m       \\
+        Rotor mass                & $m_b$     & $1.00 \times 10^4$ & kg          \\
+        Nacelle mass              & $m_n$     & $5.00 \times 10^4$ & kg          \\
+        Nacelle COM offset ($x$)  & $X_n$     & $-1.5$             & m           \\
+        Nacelle COM offset ($z$)  & $Z_n$     & $2.0$              & m           \\
+        Hub offset ($x$)          & $X_h$     & $-2.0$             & m           \\
+        Hub offset ($z$)          & $Z_h$     & $3.0$              & m           \\
+        Blade COM radial offset   & $Z_b$     & $1.5$              & m           \\
+        Nacelle inertia ($xx$)    & $J_{xxN}$ & $1.00 \times 10^6$ & kg\,m$^2$   \\
+        Nacelle inertia ($yy$)    & $J_{yyN}$ & $5.00 \times 10^6$ & kg\,m$^2$   \\
+        Nacelle inertia ($zz$)    & $J_{zzN}$ & $1.00 \times 10^6$ & kg\,m$^2$   \\
+        Blade inertia ($xx$)      & $J_{xxB}$ & $1.00 \times 10^5$ & kg\,m$^2$   \\
+        Blade inertia ($yy$)      & $J_{yyB}$ & $1.00 \times 10^6$ & kg\,m$^2$   \\
+        Blade inertia ($zz$)      & $J_{zzB}$ & $1.00 \times 10^6$ & kg\,m$^2$   \\
+        Tower torsional stiffness & $k_t$     & $1.00 \times 10^7$ & N\,m/rad    \\
+        Tower torsional damping   & $c_t$     & $5.00 \times 10^5$ & N\,m\,s/rad \\
+        Rotor speed               & $\Omega$  & $1.5$              & rad/s       \\
+        Gravity                   & $g$       & $9.81$             & m/s$^2$     \\
         \hline
     \end{tabular}
 \end{table}
 
+\newpage
 
-\subsubsection{Linearized Equations of Motion}
+\subsubsection{Nonlinear Equations of Motion}
+\label{sec:model1_nonlinear_eom}
+The equations of motion for the multi-body system are derived using the symbolic Lagrangian pipeline. The resulting highly nonlinear system takes the standard form $M(q)\ddot{q} = F(q, \dot{q}, t)$, where the generalized coordinates are defined as $q = [\theta, \psi]^T$. The symmetric mass matrix $M(q)$ and forcing vector $F(q, \dot{q}, t)$ are explicitly evaluated as:
+
+\begin{equation}
+    M(q) = \begin{bmatrix}
+        J_{yyN} + J_{yyB} \cos^{2}{\psi} + J_{zzB} \sin^{2}{\psi} + m_{n}(X_{n}^{2} + Z_{n}^{2}) + m_{b}(X_{h}^{2} + Z_{b}^{2} \cos^{2}{\psi} + 2 Z_{b} Z_{h} \cos{\psi} + Z_{h}^{2}) & X_{h} Z_{b} m_{b} \sin{\psi} \\
+        X_{h} Z_{b} m_{b} \sin{\psi}                                                                                                                                                  & J_{xxB} + m_{b} Z_{b}^{2}
+    \end{bmatrix}
+    \label{eq:model1_M_nonlinear}
+\end{equation}
+
+\begin{equation}
+    F(q, \dot{q}) = \begin{bmatrix} F_{\theta} \\ F_{\psi} \end{bmatrix}
+    \label{eq:model1_F_nonlinear}
+\end{equation}
+
+where the individual forcing terms for the tilt ($F_{\theta}$) and azimuth ($F_{\psi}$) degrees of freedom are defined as:
+
+\begin{equation*}
+    \begin{split}
+        F_{\theta} =\; & \dot{\psi}\dot{\theta}\sin{(2\psi)}(J_{yy B} - J_{zz B} + m_b Z_b^2) + 2 Z_b Z_h m_b \sin{\psi} \dot{\psi}\dot{\theta} - X_h Z_b m_b \cos{\psi} \dot{\psi}^2 \\
+                       & + g m_b \left( X_h \cos{\theta} + Z_h \sin{\theta} - \frac{Z_b}{2}\sin{(\psi - \theta)} + \frac{Z_b}{2}\sin{(\psi + \theta)} \right)                         \\
+                       & + g m_n (X_n \cos{\theta} + Z_n \sin{\theta}) - c_t \dot{\theta} - k_t \theta
+    \end{split}
+\end{equation*}
+
+\begin{equation*}
+    F_{\psi} = \sin{\psi} \left[ \dot{\theta}^2 \cos{\psi}(J_{zz B} - J_{yy B} - m_b Z_b^2) - Z_b Z_h m_b \dot{\theta}^2 + Z_b g m_b \cos{\theta} \right]
+\end{equation*}
+
+These symbolic matrices explicitly reveal the massive 3D kinematic coupling inherent in the system. The off-diagonal mass entry, $X_h Z_b m_b \sin{\psi}$, proves that a purely rigid blade still exerts an inertial torque on the tower solely based on its azimuthal position. Furthermore, the $F_{\theta}$ vector
+
+\subsubsection{Nonlinear System Response}
+\label{sec:model1_nonlinear}
+
+Before validating the linearized approximations, the full nonlinear equations of motion were integrated using a Python \texttt{solve\_ivp} environment. The system was given an initial pitch perturbation of $\theta = 5^\circ$ to observe the natural energy transfer mechanisms within the multi-body system. The resulting baseline transient response is shown in Fig.~\ref{fig:model1_nonlinear_baseline}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{OB_Rigid_Nonlinear_Baseline.png}
+    \caption{Nonlinear time-domain response of the 2-DOF Rigid Blade model given a $5^\circ$ initial tilt perturbation, demonstrating the transfer of potential energy into rotor kinetic energy.}
+    \label{fig:model1_nonlinear_baseline}
+\end{figure}
+
+The simulation highlights the kinematic coupling at play. As gravity pulls the nacelle back toward its resting equilibrium, the system loses gravitational potential energy. While a portion of this energy is absorbed by the tower damping ($c_t$), the mechanical linkage actively forces the remainder into the spinning rotor. Because pitching a spinning object induces a reaction torque, the forward pitching velocity of the nacelle acts as a driving mechanism, visibly accelerating the rotor. Once the nacelle settles into its static equilibrium, the rotor speed stabilizes, demonstrating strict conservation of energy and verifying the accuracy of the symbolic Lagrangian derivation.
+
+\subsubsection{Linearization and Eigenvalue Analysis}
 \label{sec:model1_linearization}
 
-The nonlinear mass matrix $M(q,t)$ and forcing vector $F(q, \dot{q}, t)$ derived symbolically in Section~\ref{sec:tilting_nacelle_rigid_blade} are linearized about the equilibrium state $(\theta_0,\, \dot{\psi} = \Omega,\, \delta q = 0)$ to yield the constant-coefficient system
+The nonlinear mass matrix $M(q,t)$ and forcing vector $F(q, \dot{q}, t)$ derived symbolically using the \texttt{sympy.physics.mechanics} module are linearized about the operating state ($\theta_0 = 0$, $\dot{\psi}_0 = \Omega$) to yield the constant-coefficient LTI system:
 
 \begin{equation}
     M_0\,\delta\ddot{q} + C_0\,\delta\dot{q} + K_0\,\delta q = 0,
     \label{eq:model1_linearized}
 \end{equation}
 
-where $q = [\theta,\, \psi]^T$. The three coefficient matrices evaluated at the operating point are:
-
-% ---------------------------------------------------------------
-% OUTPUT: Insert the printed/symbolic linearized M, C, K matrices
-% output by your notebook's linearization cell here. Replace the
-% placeholder entries with the actual symbolic or numerical terms.
-% ---------------------------------------------------------------
+where $\delta q = [\delta\theta,\, \delta\psi]^T$. Evaluating the Jacobian of the nonlinear equations at this operating point extracts the three fundamental coefficient matrices:
 
 \begin{equation}
-    M_0 = \begin{bmatrix} M_{11} & M_{12} \\ M_{21} & M_{22} \end{bmatrix},
-    \quad
-    C_0 = \begin{bmatrix} C_{11} & C_{12} \\ C_{21} & C_{22} \end{bmatrix},
-    \quad
-    K_0 = \begin{bmatrix} K_{11} & K_{12} \\ K_{21} & K_{22} \end{bmatrix}.
-    \label{eq:model1_MCK}
+    \label{eq:linear_M0}
+    M_0 = \begin{bmatrix}
+        J_{yy b} \cos^{2}{\psi} + J_{yy n} + J_{zz b} \sin^{2}{\psi} + m_{b} \left(X_{h}^{2} + Z_{b}^{2} \cos^{2}{\psi} + 2 Z_{b} Z_{h} \cos{\psi} + Z_{h}^{2}\right) + m_{n} \left(X_{n}^{2} + Z_{n}^{2}\right) & X_{h} Z_{b} m_{b} \sin{\psi} \\
+        X_{h} Z_{b} m_{b} \sin{\psi}                                                                                                                                                                             & J_{xx b} + Z_{b}^{2} m_{b}
+    \end{bmatrix}
 \end{equation}
 
-Several features of these matrices warrant physical interpretation. The off-diagonal entries of $C_0$ are skew-symmetric—that is, $C_{12} = -C_{21}$—and scale linearly with $\Omega$; these are the gyroscopic coupling terms generated by the spinning rotor, which transfer energy between the tilt and azimuth modes. In the stiffness matrix $K_0$, the diagonal entry $K_{11}$ contains both the structural restoring stiffness $k_t$ and a gravitational term proportional to $g\cos\theta_0$; the latter increases the effective stiffness in the upright position and represents gravitational stiffening of the tilt mode. A centrifugal stiffening contribution proportional to $\Omega^2$ also appears in $K_{11}$, causing the tilt natural frequency to rise with rotor speed as discussed in Section~\ref{sec:model1_freq}.
+\begin{equation}
+    \label{eq:linear_C0}
+    C_0 = \begin{bmatrix}
+        - J_{yy b} \Omega \sin{(2 \psi)} + J_{zz b} \Omega \sin{(2 \psi)} - 2 \Omega Z_{b} m_{b} \left(Z_{b} \cos{\psi} + Z_{h}\right) \sin{\psi} + c_{t} & 2 \Omega X_{h} Z_{b} m_{b} \cos{\psi} \\
+        0                                                                                                                                                 & 0
+    \end{bmatrix}
+\end{equation}
 
-\subsubsection{Frequency Analysis}
-\label{sec:model1_freq}
+\begin{equation}
+    \label{eq:linear_K0}
+    K_0 = \begin{bmatrix}
+        - Z_{n} g m_{n} - g m_{b} \left(Z_{b} \cos{\psi} + Z_{h}\right) + k_{t} & - \Omega^{2} X_{h} Z_{b} m_{b} \sin{\psi} \\
+        0                                                                       & - Z_{b} g m_{b} \cos{\psi}
+    \end{bmatrix}
+\end{equation}
 
-The natural frequencies of the linearized system are obtained by computing the eigenvalues of the state matrix $A$ over a swept range of rotor speeds $\Omega$, as described in Section~\ref{sec:methodology_eigenvalue}. Fig.~\ref{fig:model1_freq_vs_omega} shows the resulting frequency diagram.
+These matrices provide direct mathematical insight into the physics of the wind turbine. The mass matrix ($M_0$) contains the generalized inertias, but notably features an off-diagonal term ($X_h Z_b m_b \sin\psi$) explicitly coupling the nacelle tilt acceleration with the rotor's azimuthal acceleration based on blade position.
 
-% ---------------------------------------------------------------
-% FIGURE: Insert the frequency-vs-rotor-speed plot generated by
-% your eigenvalue sweep cell here. Typical filename from a notebook
-% might be something like 'freq_vs_omega_model1.pdf' or '.png'.
-% ---------------------------------------------------------------
+The damping matrix ($C_0$) isolates the structural tower damping ($c_t$) alongside velocity-dependent Coriolis and gyroscopic terms proportional to the rotor speed $\Omega$. These off-diagonal elements are the mathematical mechanism responsible for the energy transfer observed in the nonlinear time-domain response. Finally, the stiffness matrix ($K_0$) is comprised of the structural stiffness ($k_t$), gravitational destiffening (the negative $g$ terms representing the tower-top mass pulling the nacelle away from vertical equilibrium), and a stiffening term proportional to $\Omega^2$.
+
+To extract the system's natural frequencies and damping ratios, the second-order linear system is converted into a first-order state-space form, $\dot{x} = A x$, where the state vector is $x = [\delta\theta, \delta\psi, \delta\dot{\theta}, \delta\dot{\psi}]^T$. The top half of the $A$ matrix simply establishes the kinematic relationship between positions and their respective velocities, meaning the derivative of position is velocity. The bottom half contains the specific dynamics, encapsulating how the system's mass, damping, and stiffness matrices dictate acceleration.The structure of the $A$ matrix is given by:$$A = \begin{bmatrix} 0 & I \\ -M^{-1}K & -M^{-1}C \end{bmatrix}$$This matrix serves as the foundation for performing eigenvalue analysis, which subsequently uncovers the natural frequencies and damping properties of the coupled multi-body system. Utilizing the parameters from Table~\ref{tab:model1_params} evaluated at an operating speed of $\Omega = 1.5$\,rad/s, the numerical $A$ matrix is evaluated as:
+
+\begin{equation}
+    A = \begin{bmatrix}
+        0       & 0      & 1.0     & 0      \\
+        0       & 0      & 0       & 1.0    \\
+        -1.3085 & 0      & -0.0762 & 0.0137 \\
+        0       & 1.2012 & 0       & 0
+    \end{bmatrix}
+\end{equation}
+
+Solving the eigenvalue problem $\det(A - \lambda I) = 0$ yields the fundamental modes of the coupled system at this specific rotor speed:
+
+\begin{itemize}
+    \item \textbf{Mode 1 (Nacelle Tilt):} $\lambda = -0.0381 \pm 1.1433i$. This complex conjugate pair represents an underdamped oscillatory mode with a damped natural frequency of $\omega_n = 0.1821$\,Hz and a stable structural damping ratio of $\zeta = 3.33\%$.
+    \item \textbf{Mode 2 (Rotor Azimuth):} $\lambda_{2,3} = \pm 1.0960$. This yields purely real eigenvalues, one stable ($\lambda = -1.0960$) and one unstable ($\lambda = +1.0960$).
+\end{itemize}
+
+The presence of a positive real eigenvalue in Mode 2 indicates a static instability associated with the azimuth degree of freedom. Physically, because this linear model is evaluated at a "frozen azimuth" without a regulating generator torque to maintain the speed $\Omega$, the heavy blade acts as an inverted pendulum under the influence of gravity. A perturbation causes the blade to continuously accelerate downward away from the $\psi_0$ equilibrium. This  divergence aligns with the behavior observed in Section~\ref{sec:model1_validation}, explaining why the linear state-space approximation eventually drifts from the nonlinear baseline over time.
+
+\subsubsection{Linearized System Simulation}
+\label{sec:model1_linear_sim}
+
+To observe the isolated behavior of the LTI approximation, the linearized state-space system defined by the $A$ matrix was simulated under identical initial conditions ($\theta = 5^\circ$) using a numerical ODE solver. The time-domain response of this purely linear system is presented in Fig.~\ref{fig:model1_linear_response}.
+
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.85\textwidth]{figures/freq_vs_omega_model1}
-    \caption{Natural frequencies of the tilt mode ($\theta$) and azimuth mode ($\psi$) as a function of rotor speed $\Omega$ for Model 1. Forward and backward whirl branches are labeled.}
-    \label{fig:model1_freq_vs_omega}
+    \includegraphics[width=0.85\textwidth]{OB_Rigid_Linear_Response.png}
+    \caption{Time-domain response of the isolated LTI state-space model given a $5^\circ$ initial tilt perturbation. Unlike the nonlinear model, the linear approximation exhibits a decoupled response where energy does not transfer into the rotor speed.}
+    \label{fig:model1_linear_response}
 \end{figure}
 
-At zero rotor speed, the two modes are degenerate and share a common natural frequency set by the structural stiffness and system inertia. As $\Omega$ increases, gyroscopic coupling breaks this degeneracy and the two branches diverge: the forward whirl branch—in which the tilt precession is co-directional with rotor spin—rises in frequency, while the backward whirl branch falls. This frequency splitting is a classical consequence of the gyroscopic terms in $C_0$ and grows in proportion to $\Omega$. Simultaneously, the centrifugal stiffening term in $K_{11}$ causes a gradual upward shift in the mean tilt frequency, which is visible as an upward bias of both branches relative to their zero-speed values.
+The resulting trajectory highlights the limitations in linearizing highly coupled multibody systems. In the full nonlinear model (Fig.~\ref{fig:model1_nonlinear_baseline}), the forward pitching velocity of the nacelle transferred potential energy into the rotor via Coriolis accelerations, causing a measurable spike in rotor speed. However, in this LTI simulation, the rotor speed remains entirely unaffected by the violent $5^\circ$ pitching motion of the nacelle.
 
-\subsubsection{Damping Analysis}
-\label{sec:model1_damping}]
+This decoupling occurs because the LTI system evaluates the Jacobian matrices at a single, static equilibrium point (the "frozen azimuth" assumption, $\psi_0 = 0^\circ$). By freezing the state, the highly dynamic, position-dependent velocity cross-terms ($\dot{\theta}\dot{\psi}$) that govern energy transfer are reduced to constants or eliminated. The linear model treats the nacelle tilt as a decoupled, damped harmonic oscillator governed by constant tower stiffness and structural damping, emphasizing that while state-space matrices are excellent tools for local frequency and stability analysis, they cannot reliably simulate transient behavior.
 
-Fig.~\ref{fig:model1_damping_vs_wind} shows the damping ratio $\zeta$ of the tilt mode as a function of wind speed $V$ at a representative rotor speed.
+\subsubsection{Validation: Nonlinear vs. Linear Model}
+\label{sec:model1_validation}
+To ensure the linearized state-space matrix reflects the local dynamics of the physical system, the linear ODEs ($\dot{x} = Ax$) were integrated and superimposed over the nonlinear baseline. Both systems were subjected to an identical $1^\circ$ initial tilt perturbation to evaluate their response. Fig.~\ref{fig:model1_validation} illustrates this comparative time-domain analysis.
 
-% ---------------------------------------------------------------
-% FIGURE: Insert the damping-ratio-vs-wind-speed plot generated by
-% your aerodynamic damping sweep cell here. Typical filename might
-% be 'damping_vs_wind_model1.pdf' or '.png'.
-% ---------------------------------------------------------------
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.85\textwidth]{figures/damping_vs_wind_model1}
-    \caption{Damping ratio $\zeta$ of the tilt mode as a function of wind speed $V$ for Model 1. The horizontal dashed line marks $\zeta = 0$.}
-    \label{fig:model1_damping_vs_wind}
+    \includegraphics[width=0.85\textwidth]{OB_Rigid_Validation_Comparison.png}
+    \caption{Transient overlap comparison between the fully nonlinear model and the linearized LTI state-space model under a $1^\circ$ initial perturbation. The divergence at higher time values highlights the mathematical boundary of the frozen-azimuth assumption.}
+    \label{fig:model1_validation}
 \end{figure}
 
-At low wind speeds, aerodynamic damping augments the structural damping and the tilt mode remains well-damped. As wind speed increases toward stall, the slope of the lift curve $\partial C_L / \partial \alpha$ diminishes and eventually becomes negative (see Section~\ref{sec:aero_model}). Because aerodynamic damping is proportional to this slope, the total damping in $C_0$ decreases monotonically with wind speed beyond this point. The model predicts that $\zeta$ crosses zero at approximately $V = \texttt{<value>}$\,m/s (indicated in Fig.~\ref{fig:model1_damping_vs_wind}), beyond which the tilt mode is aeroelastically unstable. This onset is consistent with the negative-damping mechanism described in Section~\ref{sec:aero_model}: once the rotor operates in the stall regime, perturbations in tilt angle produce aerodynamic forces that amplify rather than oppose the motion.
-
-% ---------------------------------------------------------------
-% OUTPUT (optional): If your notebook prints a table of critical
-% wind speeds or a summary of damping values at specific operating
-% points, insert that printed output here as a table or verbatim
-% block, or fold the numbers directly into the text above.
-% ---------------------------------------------------------------
+The close overlap in the transient region ($t < 0.2$\,s) proves the symbolic Jacobian derivation captured the 3D rigid-body coupling terms. As expected from an LTI system utilizing a "frozen-azimuth" approximation ($\psi_0 = 0^\circ$), the linear trajectory smoothly diverges from the nonlinear response as time progresses. This divergence represents the mathematical boundary of the local small-angle assumption: as the true blade rotates away from the prescribed equilibrium, the constant-coefficient matrices lose their accuracy. This emphasizes the necessity of evaluating the linear system across a range of azimuth angles or using multi-blade coordinate transformations for full-rotor stability analyses.
 
 \subsubsection{Key Findings from Model 1}
 \label{sec:model1_findings}
 
-The tilting nacelle model demonstrates that gyroscopic coupling from the spinning rotor is the dominant mechanism driving frequency splitting between the forward and backward whirl branches, and that centrifugal stiffening produces a measurable increase in the tilt natural frequency with rotor speed. On the damping side, the model clearly identifies a critical wind speed beyond which aerodynamic stall drives the tilt mode unstable, establishing the physical link between rotor aerodynamics and structural instability. However, because the blade is treated as a rigid body, this model cannot account for the in-plane and out-of-plane flexibility modes of the blade or their coupling with the nacelle dynamics; capturing those effects—and the additional damping and frequency shifts they introduce—requires the flexible blade model presented in the following section.
+The 2-DOF rigid blade model successfully isolates the rigid-body interactions inherent to a wind turbine assembly. Through nonlinear time-domain simulation, the model demonstrates the act of a nacelle pitching forward introduces accelerations that drive the rotor speed. This confirms aerodynamic thrust is not the sole governor of rotor dynamics during turbulent pitching events; massive 3D kinematic coupling plays a critical role. Furthermore, the near-perfect transient overlap between the simulated trajectories successfully validates the mathematical Jacobian derivation and linearization methodology.
+
+However, by modeling the rotor as infinitely stiff, this model acts effectively as a rigid flywheel. It fails to capture the aeroelastic structural flexibility that causes modern, multi-megawatt turbines to suffer from destructive modal interactions, such as stall-induced vibrations. This fundamental physical limitation explicitly motivates the expansion of the kinematic framework to include a flexible blade degree of freedom, which is presented in the following section.
 
 \subsection{Tilting Nacelle, Flexible Blade}\label{sec:tilting_nacelle_flex_blade}
 Combining the rigid 3D nacelle tilt dynamics with the approximation of a flexible blade establishes a 3-DOF aeroelastic skeleton. This architecture, consisting of nacelle pitch ($\theta$), rotor azimuth ($\psi$), and flapwise blade bending ($q$), is required to capture the massive coupling terms inducing aerodynamic instabilities.
