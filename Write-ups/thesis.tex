@@ -203,18 +203,6 @@ automatically executing the required partial differentiation and algebraic simpl
 \end{equation}
 Because the symbolic relationships between mass, geometry, and rotation are preserved exactly throughout this process, the resulting model is fully transparent to inspection and analysis.
 
-\begin{lstlisting}[language=Python, caption=Simplified SymPy Derivation Pipeline]
-# Define Lagrangian from kinetic and potential energy
-L = Lagrangian(N, Nacelle, Blade)
-# Apply Lagrange's Method with non-conservative aerodynamic forces
-LM = LagrangesMethod(L, [theta, psi, q], frame=N, forcelist=forces)
-# Generate Equations of Motion
-eom = LM.form_lagranges_equations()
-# Extract Mass Matrix and Forcing Vector
-M_sym = LM.mass_matrix
-F_sym = LM.forcing
-\end{lstlisting}
-
 \subsection{Linearization Procedure}
 Although the nonlinear matrices $M$ and $F$ accurately capture the system's large-deflection dynamics, frequency and stability analysis requires linearization about a steady operating point. The equilibrium state ($q_0$) is defined by a constant nacelle tilt ($\theta_0$), a constant rotor speed ($\dot{\psi} = \Omega$), and zero initial blade deflection ($q_0 = 0$). A small perturbation ($\delta q$) is then superimposed on this equilibrium,
 \begin{equation}
@@ -481,12 +469,16 @@ The close overlap in the transient region ($t < 0.2$\,s) proves the symbolic Jac
 
 The 2-DOF rigid blade model successfully isolates the rigid-body interactions inherent to a wind turbine assembly. Through nonlinear time-domain simulation, the model demonstrates the act of a nacelle pitching forward introduces accelerations that drive the rotor speed. This confirms aerodynamic thrust is not the sole governor of rotor dynamics during turbulent pitching events; massive 3D kinematic coupling plays a critical role. Furthermore, the near-perfect transient overlap between the simulated trajectories successfully validates the mathematical Jacobian derivation and linearization methodology.
 
-However, by modeling the rotor as infinitely stiff, this model acts effectively as a rigid flywheel. It fails to capture the aeroelastic structural flexibility that causes modern, multi-megawatt turbines to suffer from destructive modal interactions, such as stall-induced vibrations. This fundamental physical limitation explicitly motivates the expansion of the kinematic framework to include a flexible blade degree of freedom, which is presented in the following section.
+However, by modeling the rotor as infinitely stiff, this model acts effectively as a rigid flywheel. It fails to capture the aeroelastic structural flexibility that causes modern, multi-megawatt turbines to suffer from destructive modal interactions, such as stall-induced vibrations. This fundamental physical limitation explicitly motivates the expansion of the kinematic framework to include a flexible blade degree of freedom, presented in the following section.
 
+\newpage
 \subsection{Tilting Nacelle, Flexible Blade}\label{sec:tilting_nacelle_flex_blade}
-Combining the rigid 3D nacelle tilt dynamics with the approximation of a flexible blade establishes a 3-DOF aeroelastic skeleton. This architecture, consisting of nacelle pitch ($\theta$), rotor azimuth ($\psi$), and flapwise blade bending ($q$), is required to capture the massive coupling terms inducing aerodynamic instabilities.
 
-\begin{figure}[htbp]
+\subsubsection{Model Description and Degrees of Freedom}
+\label{sec:model2_description}
+Combining the rigid 3D nacelle tilt dynamics with the approximation of a flexible blade establishes a 3-DOF aeroelastic skeleton. This architecture, consisting of nacelle pitch ($\theta$), rotor azimuth ($\psi$), and flapwise blade bending ($q$), is required to mathematically capture the coupling terms that induce aeroelastic instabilities. A schematic of this expanded model is shown in Fig.~\ref{fig:tilting_nacelle_flex_blade}.
+
+\begin{figure}[H]
     \centering
     \begin{tikzpicture}[>=stealth, scale=1.3]
         % Parameters
@@ -550,21 +542,183 @@ Combining the rigid 3D nacelle tilt dynamics with the approximation of a flexibl
     \label{fig:tilting_nacelle_flex_blade}
 \end{figure}
 
-Due to the complex interaction between the pitching nacelle plane and the spinning, deflecting blade, the mathematical derivation of the kinetic energy ($T$) generates extensive velocity cross-terms. By utilizing symbolic coefficient extraction during the derivation process, these cross-terms can be mapped cleanly back onto the blade's pre-calculated modal integrals. To maintain document readability, the generalized mass matrix ($M$) and forcing vector ($F$) are presented below using modal shorthand:
+To capture the distributed elasticity of the continuous blade using a discrete degree of freedom ($q$), the assumed modes method is utilized. The blade's structural properties are mapped onto a set of pre-calculated spatial integrals, establishing the generalized modal mass ($GM_b$) and generalized modal stiffness ($K_b$). The parameters specific to this flexible extension are detailed in Table~\ref{tab:model2_params}.
+
+\begin{table}[H]
+    \centering
+    \caption{Model 2 (3-DOF Flexible Blade) inertial, geometric, and modal parameters.}
+    \label{tab:model2_params}
+    \begin{tabular}{llll}
+        \hline
+        Parameter & Symbol & Value & Units \\
+        \hline
+        Gravity                   & $g$          & $9.81$             & m/s$^2$     \\
+        Nacelle mass              & $m_n$        & $5.00 \times 10^4$ & kg          \\
+        Blade mass                & $m_b$        & $1.00 \times 10^4$ & kg          \\
+        Nacelle inertia ($xx$)    & $J_{xxN}$    & $1.00 \times 10^6$ & kg\,m$^2$   \\
+        Nacelle inertia ($yy$)    & $J_{yyN}$    & $5.00 \times 10^6$ & kg\,m$^2$   \\
+        Nacelle inertia ($zz$)    & $J_{zzN}$    & $1.00 \times 10^6$ & kg\,m$^2$   \\
+        Blade inertia ($xx$)      & $J_{xxB}$    & $1.00 \times 10^5$ & kg\,m$^2$   \\
+        Blade inertia ($yy$)      & $J_{yyB}$    & $1.00 \times 10^6$ & kg\,m$^2$   \\
+        Blade inertia ($zz$)      & $J_{zzB}$    & $1.00 \times 10^6$ & kg\,m$^2$   \\
+        Nacelle COM offset ($x$)  & $X_n$        & $-1.5$             & m           \\
+        Nacelle COM offset ($z$)  & $Z_n$        & $2.0$              & m           \\
+        Hub offset ($x$)          & $X_h$        & $-2.0$             & m           \\
+        Hub offset ($z$)          & $Z_h$        & $3.0$              & m           \\
+        Blade COM radial offset   & $Z_b$        & $1.5$              & m           \\
+        Tower torsional stiffness & $k_t$        & $1.00 \times 10^7$ & N\,m/rad    \\
+        Tower torsional damping   & $c_t$        & $5.00 \times 10^5$ & N\,m\,s/rad \\
+        Blade generalized mass    & $GM_b$       & $8.00 \times 10^3$ & kg          \\
+        Blade generalized stiffness & $K_b$      & $1.00 \times 10^7$ & N/m         \\
+        Linear modal coupling     & $M_\phi$     & $5.00 \times 10^3$ & kg          \\
+        Rotational modal coupling & $M_{r\phi}$  & $6.00 \times 10^4$ & kg\,m       \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\subsubsection{Nonlinear Equations of Motion}
+\label{sec:model2_nonlinear_eom}
+
+Due to the complex interaction between the pitching nacelle plane and the spinning, deflecting blade, the mathematical derivation of the kinetic energy ($\mathcal{T}$) generates extensive velocity cross-terms. The resulting highly nonlinear equations of motion yield a $3 \times 3$ mass matrix $M(q)$ and a $3 \times 1$ forcing vector $F(q, \dot{q}, t)$:
 
 \begin{equation}
-    \label{eq:tilting_flex_mass_matrix}
+    M(q) = \begin{bmatrix} M_{11} & M_{12} & M_{13} \\ M_{21} & M_{22} & M_{23} \\ M_{31} & M_{32} & M_{33} \end{bmatrix}, \quad
+    F(q, \dot{q}) = \begin{bmatrix} F_{\theta} \\ F_{\psi} \\ F_{q} \end{bmatrix}
+    \label{eq:model2_M_F_nonlinear}
+\end{equation}
+
+The non-zero entries of the symmetric mass matrix, which govern the instantaneous inertial coupling of the system, are explicitly evaluated as:
+
+\begin{align*}
+    M_{11} &= J_{yyb} \cos^{2}{\psi} + J_{yyn} + J_{zzb} \sin^{2}{\psi} + m_{b} \left(X_{h}^{2} + Z_{b}^{2} \cos^{2}{\psi} + 2 Z_{b} Z_{h} \cos{\psi} + Z_{h}^{2}\right) + m_{n} \left(X_{n}^{2} + Z_{n}^{2}\right) \\
+    M_{12} &= X_{h} Z_{b} m_{b} \sin{\psi} \\
+    M_{13} &= M_{\phi} Z_{h} + M_{r\phi} \cos{\psi} \\
+    M_{22} &= J_{xxb} + m_{b} Z_{b}^{2} \\
+    M_{33} &= GM_{b}
+\end{align*}
+
+The individual forcing terms for the tilt ($F_{\theta}$), azimuth ($F_{\psi}$), and blade bending ($F_{q}$) degrees of freedom contain the structural restoring forces alongside the complex gyroscopic and Coriolis accelerations:
+
+\begin{align*}
+    F_{\theta} =\; & \dot{\psi}\dot{\theta}\sin{(2\psi)}(J_{yyb} - J_{zzb} + m_b Z_b^2) + 2 Z_b Z_h m_b \sin{\psi} \dot{\psi}\dot{\theta} - X_h Z_b m_b \cos{\psi} \dot{\psi}^2 \\
+    & + M_{r\phi} \sin{\psi} \dot{\psi} \dot{q} + g m_b \left( X_h \cos{\theta} + Z_h \sin{\theta} - \frac{Z_b}{2}\sin{(\psi - \theta)} + \frac{Z_b}{2}\sin{(\psi + \theta)} \right) \\
+    & + g m_n (X_n \cos{\theta} + Z_n \sin{\theta}) - c_t \dot{\theta} - k_t \theta \\[1em]
+    F_{\psi} =\; & \sin{\psi} \left[ \dot{\theta}^2 \cos{\psi}(J_{zzb} - J_{yyb} - m_b Z_b^2) - Z_b Z_h m_b \dot{\theta}^2 - M_{r\phi} \dot{q} \dot{\theta} + Z_b g m_b \cos{\theta} \right] \\[1em]
+    F_{q} =\; & M_{r\phi} \sin{\psi} \dot{\psi} \dot{\theta} - K_{b} q
+\end{align*}
+
+These symbolic matrices explicitly reveal how the introduction of a flexible degree of freedom alters the system dynamics. The mass matrix now contains $M_{13}$, a direct inertial link between the nacelle tilt ($\theta$) and the flapwise deflection ($q$), governed by the rotational modal coupling integral $M_{r\phi}$. Furthermore, the $F_q$ vector demonstrates that a tilting nacelle ($\dot{\theta}$) combined with a spinning rotor ($\dot{\psi}$) will actively force the blade to bend ($q$), acting as a direct source of aeroelastic excitation.
+
+\subsubsection{Nonlinear System Response}
+\label{sec:model2_nonlinear_response}
+
+To observe the baseline dynamic behavior of the 3-DOF framework, the fully nonlinear equations of motion were integrated numerically using a Python \texttt{solve\_ivp} environment. Consistent with the rigid blade analysis, the system was subjected to an initial nacelle pitch perturbation of $\theta = 5^\circ$ while operating at a steady rotor speed of $\Omega = 1.5$\,rad/s. The resulting transient response is presented in Fig.~\ref{fig:model2_nonlinear_baseline}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{OB_Flex_Nonlinear_Baseline.png}
+    \caption{Nonlinear time-domain response of the 3-DOF Flexible Blade model given a $5^\circ$ initial tilt perturbation. The response demonstrates a multi-modal energy cascade, where potential energy from the falling nacelle excites both fluctuations in rotor speed and high-frequency flapwise blade bending.}
+    \label{fig:model2_nonlinear_baseline}
+\end{figure}
+
+The simulation illustrates a complex, energy cascade absent in the rigid model. As the nacelle falls back toward its vertical equilibrium, the loss of gravitational potential energy is distributed across the dynamic coupling terms. While the rotor speed ($\dot{\psi}$) experiences a familiar, low-frequency acceleration driven by Coriolis forces, the addition of the flexible degree of freedom introduces a new energy sink. 
+
+The pitching motion of the hub, combined with the continuous azimuthal rotation, forces the blade to undergo high-frequency flapwise bending ($q$). This vibration oscillates rapidly compared to the nacelle tilt, highlighting the differing timescales of the structural dynamics. The explicit mathematical connection between the nacelle's motion and the blade's deflection—driven by the $M_{13}$ mass coupling and the $F_q$ velocity cross-terms—is visually confirmed by this transient energy transfer.
+
+
+\subsubsection{Linearization and Eigenvalue Analysis}
+\label{sec:model2_linearization}
+
+To analyze the system's modal frequencies and stability limits, the nonlinear matrices are linearized about the equilibrium state ($\theta_0 = 0$, $\dot{\psi}_0 = \Omega$, $q_0 = 0$). This constant-coefficient LTI system takes the form $M_0\,\delta\ddot{q} + C_0\,\delta\dot{q} + K_0\,\delta q = 0$, where $\delta q = [\delta\theta,\, \delta\psi,\, \delta q]^T$. Evaluating the Jacobian extracts the three fundamental coefficient matrices:
+
+\begin{equation}
+    \label{eq:linear2_M0}
     \resizebox{0.95\textwidth}{!}{%
-        $M = \left[\begin{matrix}GM_{b} & 0 & 0\\0 & J_{yy b} \cos^{2}{\left(\psi \right)} + J_{yy n} + J_{zz b} \sin^{2}{\left(\psi \right)} + m_{b} \left(X_{h}^{2} + Z_{h}^{2} + 2 Z_{h} \left(Z_{b} \cos{\left(\psi \right)} + q \sin{\left(\psi \right)}\right) + \left(Z_{b} \cos{\left(\psi \right)} + q \sin{\left(\psi \right)}\right)^{2}\right) + m_{n} \left(X_{n}^{2} + Z_{n}^{2}\right) & X_{h} m_{b} \left(- Z_{b} \sin{\left(\psi \right)} + q \cos{\left(\psi \right)}\right)\\0 & X_{h} m_{b} \left(- Z_{b} \sin{\left(\psi \right)} + q \cos{\left(\psi \right)}\right) & J_{xx b} + m_{b} \left(Z_{b}^{2} + q^{2}\right)\end{matrix}\right]$
+        $M_0 = \begin{bmatrix}
+        J_{yy b} \cos^{2}{\psi} + J_{yy n} + J_{zz b} \sin^{2}{\psi} + m_{b} \left(X_{h}^{2} + Z_{b}^{2} \cos^{2}{\psi} + 2 Z_{b} Z_{h} \cos{\psi} + Z_{h}^{2}\right) + m_{n} \left(X_{n}^{2} + Z_{n}^{2}\right) & X_{h} Z_{b} m_{b} \sin{\psi} & M_{\phi} Z_{h} + M_{r\phi} \cos{\psi} \\
+        X_{h} Z_{b} m_{b} \sin{\psi} & J_{xx b} + Z_{b}^{2} m_{b} & 0 \\
+        M_{\phi} Z_{h} + M_{r\phi} \cos{\psi} & 0 & GM_{b}
+        \end{bmatrix}$%
     }
 \end{equation}
 
 \begin{equation}
-    \label{eq:tilting_flex_forcing_vector}
-    \resizebox{0.95\textwidth}{!}{%
-        $F = \left[\begin{matrix}- K_{b} q + g m_{b} \sin{\left(\psi \right)} \cos{\left(\theta \right)} + \frac{m_{b} \left(2 X_{h} \cos{\left(\psi \right)} \dot{\psi} \dot{\theta} + 2 Z_{h} \sin{\left(\psi \right)} \dot{\theta}^{2} + \left(Z_{b} \sin{\left(2 \psi \right)} - q \cos{\left(2 \psi \right)} + q\right) \dot{\theta}^{2} + 2 q \dot{\psi}^{2}\right)}{2}\\J_{yy b} \sin{\left(2 \psi \right)} \dot{\psi} \dot{\theta} - J_{zz b} \sin{\left(2 \psi \right)} \dot{\psi} \dot{\theta} + X_{h} Z_{b} m_{b} \cos{\left(\psi \right)} \dot{\psi}^{2} + X_{h} g m_{b} \cos{\left(\theta \right)} + X_{h} m_{b} q \sin{\left(\psi \right)} \dot{\psi}^{2} - X_{h} m_{b} \cos{\left(\psi \right)} \dot{\psi} \dot{q} + X_{n} g m_{n} \cos{\left(\theta \right)} + Z_{b}^{2} m_{b} \sin{\left(2 \psi \right)} \dot{\psi} \dot{\theta} + 2 Z_{b} Z_{h} m_{b} \sin{\left(\psi \right)} \dot{\psi} \dot{\theta} + \frac{Z_{b} g m_{b} \sin{\left(\psi - \theta \right)}}{2} - \frac{Z_{b} g m_{b} \sin{\left(\psi + \theta \right)}}{2} - 2 Z_{b} m_{b} q \cos{\left(2 \psi \right)} \dot{\psi} \dot{\theta} - Z_{b} m_{b} \sin{\left(2 \psi \right)} \dot{q} \dot{\theta} - Z_{h} g m_{b} \sin{\left(\theta \right)} - 2 Z_{h} m_{b} q \cos{\left(\psi \right)} \dot{\psi} \dot{\theta} - 2 Z_{h} m_{b} \sin{\left(\psi \right)} \dot{q} \dot{\theta} - Z_{n} g m_{n} \sin{\left(\theta \right)} - \frac{g m_{b} q \cos{\left(\psi - \theta \right)}}{2} + \frac{g m_{b} q \cos{\left(\psi + \theta \right)}}{2} - k_{t} \theta - m_{b} q^{2} \sin{\left(2 \psi \right)} \dot{\psi} \dot{\theta} + m_{b} q \cos{\left(2 \psi \right)} \dot{q} \dot{\theta} - m_{b} q \dot{q} \dot{\theta}\\- \frac{J_{yy b} \sin{\left(2 \psi \right)} \dot{\theta}^{2}}{2} + \frac{J_{zz b} \sin{\left(2 \psi \right)} \dot{\theta}^{2}}{2} - X_{h} m_{b} \cos{\left(\psi \right)} \dot{q} \dot{\theta} - \frac{Z_{b}^{2} m_{b} \sin{\left(2 \psi \right)} \dot{\theta}^{2}}{2} - Z_{b} Z_{h} m_{b} \sin{\left(\psi \right)} \dot{\theta}^{2} - \frac{Z_{b} g m_{b} \sin{\left(\psi - \theta \right)}}{2} - \frac{Z_{b} g m_{b} \sin{\left(\psi + \theta \right)}}{2} + Z_{b} m_{b} q \cos{\left(2 \psi \right)} \dot{\theta}^{2} + Z_{h} m_{b} q \cos{\left(\psi \right)} \dot{\theta}^{2} + \frac{g m_{b} q \cos{\left(\psi - \theta \right)}}{2} + \frac{g m_{b} q \cos{\left(\psi + \theta \right)}}{2} + \frac{m_{b} q^{2} \sin{\left(2 \psi \right)} \dot{\theta}^{2}}{2} - 2 m_{b} q \dot{\psi} \dot{q}\end{matrix}\right]$
-    }
+    \label{eq:linear2_C0}
+    C_0 = \begin{bmatrix}
+        - J_{yy b} \Omega \sin{(2 \psi)} + J_{zz b} \Omega \sin{(2 \psi)} - 2 \Omega Z_{b} m_{b} \left(Z_{b} \cos{\psi} + Z_{h}\right) \sin{\psi} + c_{t} & 2 \Omega X_{h} Z_{b} m_{b} \cos{\psi} & - M_{r\phi} \Omega \sin{\psi} \\
+        0 & 0 & 0 \\
+        - M_{r\phi} \Omega \sin{\psi} & 0 & 0
+        \end{bmatrix}
 \end{equation}
+
+\begin{equation}
+    \label{eq:linear2_K0}
+    K_0 = \begin{bmatrix}
+        - Z_{n} g m_{n} - g m_{b} \left(Z_{b} \cos{\psi} + Z_{h}\right) + k_{t} & - \Omega^{2} X_{h} Z_{b} m_{b} \sin{\psi} & 0 \\
+        0 & - Z_{b} g m_{b} \cos{\psi} & 0 \\
+        0 & 0 & K_{b}
+        \end{bmatrix}
+\end{equation}
+
+To extract the physical frequencies, the system is converted into a first-order state-space formulation ($\dot{x} = Ax$), where the $6 \times 6$ state matrix $A$ is constructed using $A = \left[ \begin{smallmatrix} 0 & I \\ -M_0^{-1}K_0 & -M_0^{-1}C_0 \end{smallmatrix} \right]$. Evaluated at an operating speed of $\Omega = 1.5$\,rad/s, the numerical $A$ matrix becomes:
+
+\begin{equation}
+    \label{eq:linear2_A_matrix}
+    A = \begin{bmatrix}
+        0 & 0 & 0 & 1.0 & 0 & 0 \\
+        0 & 0 & 0 & 0 & 1.0 & 0 \\
+        0 & 0 & 0 & 0 & 0 & 1.0 \\
+        -1.4658 & 0 & 16.0205 & -0.0854 & 0.0154 & 0 \\
+        0 & 1.2012 & 0 & 0 & 0 & 0 \\
+        13.7417 & 0 & -1400.1922 & 0.8010 & -0.1442 & 0
+        \end{bmatrix}
+\end{equation}
+
+Solving the eigenvalue problem for this matrix reveals exactly how structural flexibility alters the dynamic response. The fundamental modes are:
+
+\begin{itemize}
+    \item \textbf{Mode 1 (Blade Flapwise Bending):} $\lambda = -0.0046 \pm 37.4212i$. This mode oscillates at a highly underdamped natural frequency of $f_n = 5.95$\,Hz ($\zeta = 0.01\%$).
+    \item \textbf{Mode 2 (Nacelle Tilt):} $\lambda = -0.0381 \pm 1.1432i$. This tower-top mode oscillates at $f_n = 0.1821$\,Hz with a damping ratio of $\zeta = 3.33\%$.
+    \item \textbf{Mode 3 (Rotor Azimuth):} $\lambda = 1.0960$. As seen in the rigid model, the frozen-azimuth approximation forces the rotor into a state of exponential divergence (an inverted pendulum falling under gravity), resulting in a purely real, positive eigenvalue.
+\end{itemize}
+
+Crucially, the addition of the flexible blade successfully captures modal interactions. While the rigid blade model (Section~\ref{sec:model1_linearization}) predicted a rigid tilt eigenvalue of $\lambda_{rigid} = -0.0381 \pm 1.1433i$, the introduction of the blade's generalized mass ($GM_b$) and modal coupling ($M_{r\phi}$) subtly shifts this fundamental frequency. Although the shift at this specific azimuth is small, the mathematical framework definitively proves that the tower mode does not exist in isolation; it is actively coupled to, and altered by, the flexural state of the rotor.
+
+\subsubsection{Linearized System Simulation}
+\label{sec:model2_linear_sim}
+To evaluate the isolated behavior of the 3-DOF LTI approximation, the linearized state-space system defined by the $A$ matrix was simulated using identical initial conditions ($\theta = 5^\circ$). The time-domain response of this purely linear system is presented in Fig.~\ref{fig:model2_linear_response}.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\textwidth]{OB_Flex_Linear_Response.png}
+    \caption{Time-domain response of the isolated 3-DOF LTI state-space model given a $5^\circ$ initial tilt perturbation. The system captures the high-frequency structural coupling between the blade and the nacelle, but the rotor speed remains entirely decoupled.}
+    \label{fig:model2_linear_response}
+\end{figure}
+
+The resulting trajectory offers a fascinating look into the capabilities and limitations of linearizing a highly flexible structure. Unlike the 2-DOF rigid model, which produced perfectly smooth decay curves, the linear 3-DOF model successfully captures the structural modal interactions. The nacelle tilt curve (top subplot) exhibits high-frequency oscillations superimposed over its primary $0.18$\,Hz decay path. These superimposed ``wiggles'' perfectly match the $\sim6$\,Hz natural frequency of the flapwise bending mode (bottom subplot). This confirms that the linear $M_0$ and $C_0$ matrices successfully preserve the structural coupling between the tower and the blade; the vibration of the flexible appendage actively disturbs the nacelle.
+
+However, the macroscopic energy transfer remains restricted. Just as observed in the rigid model simulation, the rotor speed ($\dot{\psi}$) remains a perfectly flat line. Because the system was linearized around a frozen azimuth ($\psi_0 = 0^\circ$), the dynamic, position-dependent velocity cross-terms ($\dot{\theta}\dot{\psi}$) are zeroed out. The linear model treats the system as three distinct, interconnected springs, successfully passing high-frequency vibrational energy back and forth between the tower and the blade, but remaining fundamentally blind to the large-scale rotational Coriolis forces that dominate the true nonlinear physics.
+
+\subsubsection{Validation: Nonlinear vs. Linear Model}
+\label{sec:model2_validation}
+
+To evaluate the mathematical boundaries of the frozen-azimuth approximation for highly flexible systems, the $6 \times 6$ linear state-space trajectory was superimposed over the nonlinear baseline. Fig.~\ref{fig:model2_validation} illustrates this comparative time-domain analysis under an identical $1^\circ$ initial tilt perturbation.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\textwidth]{OB_Flex_Validation_Comparison.png} % Ensure filename matches repo exactly
+    \caption{Transient overlap comparison between the fully nonlinear 3-DOF model and the linearized state-space model under a $1^\circ$ initial perturbation. The flexible blade mode (bottom) exhibits rapid divergence due to its high sensitivity to the instantaneous rotor position.}
+    \label{fig:model2_validation}
+\end{figure}
+
+The resulting overlap plot confirms the local accuracy of the Jacobian derivation, with the linear approximation perfectly tracking the nonlinear response during the initial transient region. However, the limitation of the constant-coefficient LTI approach is visually stark in the flexible blade coordinate ($q$). Unlike the relatively sluggish rigid-body modes ($\theta$), the high-frequency vibration of the blade is extraordinarily sensitive to the instantaneous azimuthal position of the rotor ($\psi$). Because the LTI matrix evaluated gravity and modal coupling strictly at $\psi_0 = 0^\circ$, it rapidly loses global accuracy as the blade spins away from this assumed vertical position, causing the high-frequency linear trajectory to decouple and diverge from reality much faster than in the 2-DOF rigid model.
+
+\subsubsection{Key Findings from Model 2}
+\label{sec:model2_findings}
+
+The 3-DOF flexible blade model successfully demonstrates that aeroelastic structures cannot be accurately simulated using rigid-body mechanics alone. By introducing a continuous modal deflection coordinate, this model analytically proved that a wind turbine blade does not act simply as a rigid flywheel; instead, it acts as a highly dynamic energy sink. Potential energy from the tower is actively siphoned through velocity cross-terms into high-frequency flapwise vibrations. 
+
+Furthermore, the eigenvalue analysis confirmed the central hypothesis of this thesis: the structural modes of a wind turbine do not exist in isolation. The addition of the blade's generalized mass and rotational modal coupling subtly, but definitively, altered the fundamental natural frequency of the entire tower-top assembly. This mathematical proof highlights why standard industry simulators must utilize fully flexible, coupled multi-body kinematics to avoid catastrophic aeroelastic resonance and stall-induced vibrations in modern offshore deployments.
 
 \section{Conclusion}
 The review of current literature shows a clear distinction in the modeling of wind turbine dynamics. On one hand, numerical simulators provide comprehensive data but often obscure the driving physical mechanisms behind complex instabilities. On the other hand, symbolic models have emerged as powerful tools for isolating specific dynamic behaviors \cite{branlard2022symbolic}. These symbolic frameworks are identified as particularly valuable for understanding the fundamental trends of aeroelastic instabilities, such as flutter and stall-induced vibrations, which pose significant risks to the structural integrity of modern, flexible offshore turbines \cite{hansen2007aeroelastic}.
@@ -762,10 +916,6 @@ A single blade model, working on increasing complexity, was derived using a 2-DO
     \end{bmatrix}
 \end{equation}
 
-% --- Bibliography Section ---
-\newpage
-\bibliography{references}
-
 \subsection{Fixed Nacelle, Flexible Blade}\label{app:fixed_nacelle_flex_blade}
 A flexible blade rotating about a fixed nacelle model was developed as a simplified model for flexible blade analysis. This model employs a flexing degree of freedom ($q$) to represent the deflection of the blade, and a rotational degree of freedom ($\psi$) representing the azimuth. The nacelle is assumed to be rigid and stationary for this derivation to isolate the rotation and blade bending.
 
@@ -923,4 +1073,7 @@ The equations of motion were derived by considering the kinetic energy of the fl
 
 \subsection{Flexible Rotating Blade, Tilting Nacelle Parameters}\label{app:FRBTNparams}
 
+% --- Bibliography Section ---
+\newpage
+\bibliography{references}
 \end{document}
