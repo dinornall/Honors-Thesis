@@ -127,6 +127,13 @@ Within the \texttt{sympy.physics.mechanics} environment used in this thesis, the
 \end{equation}
 This form with the mass matrix ($\mathbf{M}$) and the forcing vector ($\mathbf{F}$), has advantages in computational efficency and clarity when analyzing a system's dynamics. This formulation serves as the necessary foundation for the subsequent linearization and eigenvalue analysis of the dynamic system.
 
+\section{Literature Conclusions}
+The review of current literature shows a clear distinction in the modeling of wind turbine dynamics. On one hand, numerical simulators provide comprehensive data but often obscure the driving physical mechanisms behind complex instabilities. On the other hand, symbolic models have emerged as powerful tools for isolating specific dynamic behaviors \cite{branlard2022symbolic}. These symbolic frameworks are identified as particularly valuable for understanding the fundamental trends of aeroelastic instabilities, such as flutter and stall-induced vibrations, which pose significant risks to the structural integrity of modern, flexible offshore turbines \cite{hansen2007aeroelastic}.
+
+Despite the proven utility of these symbolic methods, a distinct gap remains in their application to higher-order structural modes. While the fundamental blade and tower modes are well-documented in stability analyses, the second tower mode has received less analytical attention. However, existing studies often rely on simulation to observe these effects, rather than deriving them from first principles to expose the underlying mathematical dependencies.
+
+This thesis hopes to bridge this gap by establishing a theoretical foundation for the symbolic derivation of wind turbine equations of motion. These equations will subsequently be linearized to perform eigenvalue analysis, allowing for the precise mapping of frequency and damping trends as functions of rotational speed and wind velocity. Ultimately, this work aims to contribute to the safer design of next-generation offshore turbines by demystifying the aeroelastic behavior of their increasingly flexible structures.
+
 \subsection{Modeling Approaches}
 Modern wind turbine blades and towers bend and twist, so they cannot be modeled simply as rigid bodies. However, treating them as continuous flexible structures results in highly complex Partial Differential Equations (PDEs) with an infinite number of degrees of freedom. An important part of modeling wind turbine dynamics is therefore reducing the system into a mathematically manageable form. This can be achieved through the Rayleigh-Ritz method.
 
@@ -180,7 +187,7 @@ $$\mathbf{q}(t) = [w_1(t), \theta_1(t), w_2(t), \theta_2(t)]^T$$
 
 This representation of the beam's deformation allows for the evaluation of the kinetic and potential energy required by Lagrangian mechanics, which in turn can be used to derive the EOMs for the system. Integrating these shape functions into the Finite Element Method (FEM)  improves the modeling of wind turbines compared simpler methods. While a basic approach tries to guess one continuous mathematical curve for an entire tower or blade, FEM divides the structure into many smaller, interconnected beam elements, each governed by these cubic shape functions. This localized approach allows the model to account for the variations in mass, chord length, and structural stiffness that occur from the root of a blade to its tip. By evaluating the Lagrangian energy equations element by element using these unit translation and rotation functions, engineers can assemble highly accurate global mass and stiffness matrices. Integration FEM shape functions provides the mathematical rigor required to predict aeroelastic phenomena, such as flutter and whirling, in modern offshore wind energy systems.
 
-\section{Project Evaluation and Management}
+\section{Project Evaluation and Management}\label{sec:eval}
 
 \subsection{Evaluation}
 This Honors Thesis will be evaluated based on the completion of both a Research Manuscript and functional computational models. Specifically, Professor Branlard will assess the work based on measurable goals including the symbolic derivation of Equations of Motion for wind turbine models of increasing complexity, and the analytical validation of the frequency and damping trends within these models. Progress will be assessed weekly through review of derived equations and code snippets.
@@ -191,7 +198,7 @@ To maintain consistent progress, a regular meeting schedule is maintained with t
 \subsection{Project Timeline}
 From January through March, I will continue work on the Honors Thesis, ensuring that research results are reviewed continuously during weekly meetings. The formal writing process will proceed iteratively, aiming to create a draft of the Research Manuscript by Early May for Professor Branlard to review. All the while I intend to refine the computational models and finalize the written manuscript.The properly formatted Research Manuscript along with the associated Python repository, will be submitted via CHC Paths by the end of classes.
 
-\section{Methodology}
+\section{Methodology}\label{sec:methodology}
 
 \subsection{Symbolic Derivation Pipeline}
 The equations of motion for the wind turbine models are generated through a symbolic derivation pipeline built on the Python \texttt{sympy.physics.mechanics} module. The workflow begins by defining the system's reference frames, point locations, and generalized coordinates ($q(t)$), after which the kinetic energy ($\mathcal{T}$) and potential energy ($\mathcal{V}$) are constructed symbolically. The pipeline then evaluates the Euler-Lagrange equations,
@@ -234,7 +241,7 @@ where the imaginary part ($\omega_d$) is the damped natural frequency and the re
 \end{equation}
 This eigenvalue analysis is embedded in a parametric sweep over rotor speed ($\Omega$) and wind velocity ($V$), and the resulting frequencies and damping ratios are plotted to expose phenomena such as frequency veering and negative damping. The analytical predictions are then benchmarked against eigenvalues computed by high-fidelity OpenFAST (ElastoDyn/AeroDyn) simulations at identical operating conditions to validate the model.
 
-\section{Analysis and Results}
+\section{Analysis and Results}\label{sec:analysis}
 To achieve the objectives of this thesis, I will be using the sympy library in Python to perform the symbolic derivation of the equations of motion. This process will begin with a familiarization of the library with progressively more complex systems. A systematic approach is used to ensure the accuracy of the derivations, starting with simple systems and building up to more complicated models that incorporate flexibility and rotation. This methodical approach allows for the validation of the framework at each step.
 
 The equations of motion for five models were generated and validated against benchmarks. These models include the \hyperref[app:simple_pendulum]{Simple Pendulum}, a chaotic \hyperref[app:double_pendulum]{Double Pendulum}, a 2-DOF \hyperref[app:pendulum_cart]{Single Blade Pendulum on a Cart}, a \hyperref[app:fixed_nacelle_flex_blade]{Fixed Nacelle with a Flexible Rotating Blade}, and a \hyperref[app:flex_tower_rigid_blade]{Flexible Tower with a Rotating Rigid Blade}. Following validation, the pipeline that was developed while deriving these models was applied to derive two additional models. These models were the \hyperref[sec:tilting_nacelle_rigid_blade]{Tilting Nacelle with a Rigid Rotating Blade} and the \hyperref[sec:tilting_nacelle_flex_blade]{Tilting Nacelle with a Flexible Rotating Blade}. The following sections provide a detailed description of the derivation process for each of these models.
@@ -721,12 +728,77 @@ The 3-DOF flexible blade model successfully demonstrates that aeroelastic struct
 
 Furthermore, the eigenvalue analysis confirmed the central hypothesis of this thesis: the structural modes of a wind turbine do not exist in isolation. The addition of the blade's generalized mass and rotational modal coupling subtly, but definitively, altered the fundamental natural frequency of the entire tower-top assembly. This mathematical proof highlights why standard industry simulators must utilize fully flexible, coupled multi-body kinematics to avoid catastrophic aeroelastic resonance and stall-induced vibrations in modern offshore deployments.
 
+\section{Discussion} \label{sec:discussion}
+
+The primary objective of this thesis was to establish a series of transparent, symbolic aeroelastic models to uncover the fundamental physical trends governing wind turbine stability. By utilizing a Lagrangian framework to derive the equations of motion for both rigid and flexible models, this study sought to physically explain non-intuitive phenomena—specifically, why the second tower mode varies significantly when blade flexibility is introduced, and how gyroscopic interactions dictate the system's response to aerodynamic loads. The following sections interpret the numerical findings to explicitly answer the questions.
+
+\subsection{The Impact of Structural Flexibility on Tower Modes}
+\label{sec:discussion_flexibility}
+
+A central challenge in modern offshore wind turbine design is predicting the behavior of higher-order structural modes, such as the second tower mode, which can suffer from negative aerodynamic damping and lead to stall-induced vibrations. Standard rigid-body models are insufficient for analyzing these phenomena. The comparative analysis between Model 1 (2-DOF Rigid Blade) and Model 2 (3-DOF Flexible Blade) explicitly demonstrates why this is the case: the introduction of structural flexibility fundamentally alters the inertial coupling of the entire system.
+
+In Model 1, the rotor is treated as an infinitely stiff body. Mathematically, this means the rotor contributes only its static mass and rotational inertia to the mass matrix ($M_0$). It acts as a rigid flywheel; while it can pass energy back and forth with the nacelle via gyroscopic forces, it cannot internally store flexural strain energy. 
+
+However, in Model 2, the discretization of the flexible blade via the assumed modes method introduces a new coordinate ($q$) governed by the blade's generalized mass ($GM_b$) and stiffness ($K_b$). Crucially, this addition generates a new off-diagonal mass coupling term in the linearized Jacobian, evaluated as:
+
+\begin{equation}
+    M_{13} = M_{\phi} Z_{h} + M_{r\phi} \cos{\psi}
+\end{equation}
+
+This single mathematical term, representing the linear ($M_{\phi}$) and rotational ($M_{r\phi}$) modal coupling, explicitly links the nacelle tilt acceleration ($\ddot{\theta}$) directly to the flapwise blade acceleration ($\ddot{q}$). Physically, this proves that a flexible blade does not simply rest on top of the tower; it acts as a dynamic energy sink. When the nacelle pitches, the acceleration forces the continuous mass of the blade to deflect. This modal interaction, confirmed by the high-frequency vibrations in the transient simulation (Fig.~\ref{fig:model2_nonlinear_baseline}), subtly shifts the natural frequency of the tower mode. As established in the literature, this mathematical coupling is the root cause of the non-intuitive damping behaviors observed in industry black-box simulators \cite{hansen2003improved}. If the blade's natural frequency approaches that of the tower, this off-diagonal term acts as a conduit for devastating aeroelastic resonance.
+
+\subsection{Gyroscopic Coupling and Energy Transfer}
+\label{sec:discussion_gyroscopic}
+
+A secondary objective of this analysis was to determine how gyroscopic effects dynamically dictate the frequencies of a wind turbine's macroscopic modes. In standard structural analysis, modes are often treated as independent orthogonal components. However, the continuous rotation of a massive wind turbine rotor fundamentally breaks this independence through gyroscopic coupling.
+
+This coupling is physically driven by the conservation of angular momentum. When the heavy rotor is spinning (generating a large angular momentum vector) and the nacelle suddenly pitches forward due to a gust, the system experiences a forced change in the direction of that angular momentum vector. This action generates an immediate gyroscopic reaction torque.
+
+This phenomenon is explicitly proven in both the 2-DOF and 3-DOF symbolic derivations. In the nonlinear forcing vectors ($F$), massive velocity cross-terms emerge, such as the Coriolis acceleration term $\dot{\psi}\dot{\theta}\sin(2\psi)(J_{yy B} - J_{zz B} + m_b Z_b^2)$. The presence of both $\dot{\psi}$ (rotor speed) and $\dot{\theta}$ (nacelle pitch velocity) in a single multiplied term proves that motion in one degree of freedom actively forces acceleration in the other. This algebraic relationship is validated by the nonlinear time-domain responses (Figs.~\ref{fig:model1_nonlinear_baseline} and \ref{fig:model2_nonlinear_baseline}), which visually capture this energy transfer: a perturbation entirely in the tilt angle actively accelerates the rotor as the system seeks to balance the internal gyroscopic torques.
+
+When the system is linearized to evaluate stability near an operating point, these dynamic velocity cross-terms map directly into the damping matrix ($C_0$). As derived in Section \ref{sec:model2_linearization}, the off-diagonal entries of the damping matrix contain terms that scale linearly with the rotor speed ($\pm J\Omega\sin(2\psi)$). Because these terms are skew-symmetric and proportional to $\Omega$, they cause the natural frequencies of the coupled system to diverge as the turbine speeds up—a phenomenon classically known as frequency splitting or ``whirling.'' The symbolic framework successfully isolates the mathematical root of this phenomenon: the rotating rotor acts as an active, speed-dependent gyroscopic spring that stiffens one mode branch (forward whirl) while softening the other (backward whirl).
+
+\subsection{Limitations of the Analytical Approach}
+\label{sec:discussion_limitations}
+
+While the symbolic Lagrangian methodology provides unparalleled transparency for identifying the root causes of aeroelastic phenomena, the reduced-order nature of these models inherently introduces specific mathematical and physical limitations.
+
+The most prominent limitation encountered in this analysis is the boundary of the ``frozen-azimuth'' approximation. As demonstrated in the time-domain validation plots (Figs.~\ref{fig:model1_validation} and \ref{fig:model2_validation}), linearizing the EOMs requires freezing the rotor at a specific angular position ($\psi_0 = 0^\circ$). Because the coupling terms in the generalized mass and stiffness matrices are highly sensitive to the trigonometric orientation of the blade, the constant-coefficient LTI system is only accurate for small perturbations near this equilibrium. As the true nonlinear rotor continues to spin, the local tangent approximation drifts, causing the linear simulation to rapidly diverge. In the 3-DOF model, this divergence occurs even faster due to the high-frequency sensitivity of the flexible blade mode. In practice, full-rotor aeroelastic analyses circumvent this limitation by applying the Multi-Blade Coordinate (MBC) transformation (Coleman transformation), which converts the individual, periodically varying blade coordinates into constant, non-rotating reference frames.
+
+Secondly, the analytical models isolated the structural dynamics from advanced aerodynamic loading and generator control systems. For instance, the purely real, positive eigenvalue ($\lambda = 1.0960$) extracted from both models indicates a static instability in the rotor azimuth mode. Physically, this is a mathematical artifact of modeling an un-driven, heavy rigid body as a free hinge; without aerodynamic thrust to drive it or generator torque to regulate it, gravity pulls the mass away from the vertical equilibrium.
+
+Finally, the assumed modes method in this thesis utilized only a single flapwise shape function to discretize the blade. Modern multi-megawatt blades exhibit complex torsional and edgewise modes that couple tightly with flapwise bending, ultimately driving catastrophic instabilities such as classical flutter. While the symbolic models in this thesis serve as essential educational tools for proving the existence and mechanisms of multi-body energy transfer, capturing these high-order interactions across a fully spinning, fully aerodynamic rotor necessitates the use of high-fidelity, black-box numerical simulators like OpenFAST for comprehensive design load cases.
+
 \section{Conclusion}
-The review of current literature shows a clear distinction in the modeling of wind turbine dynamics. On one hand, numerical simulators provide comprehensive data but often obscure the driving physical mechanisms behind complex instabilities. On the other hand, symbolic models have emerged as powerful tools for isolating specific dynamic behaviors \cite{branlard2022symbolic}. These symbolic frameworks are identified as particularly valuable for understanding the fundamental trends of aeroelastic instabilities, such as flutter and stall-induced vibrations, which pose significant risks to the structural integrity of modern, flexible offshore turbines \cite{hansen2007aeroelastic}.
+\label{sec:conclusion}
+% Introductory Paragraph:
+%   - Briefly recap the primary motivation behind the thesis: The increasing scale of offshore wind turbines necessitates a deeper understanding of aeroelastic phenomena, specifically the complex coupling between structural flexibility and rotational dynamics.
+%   - State the core objective: To construct transparent, symbolic analytical models (using Lagrangian mechanics and the assumed modes method) that reveal the physical mechanisms driving instability, moving beyond the "black-box" numerical approaches typically employed in industry.
 
-Despite the proven utility of these symbolic methods, a distinct gap remains in their application to higher-order structural modes. While the fundamental blade and tower modes are well-documented in stability analyses, the second tower mode has received less analytical attention. However, existing studies often rely on simulation to observe these effects, rather than deriving them from first principles to expose the underlying mathematical dependencies.
+% Summary of Rigid Model Findings:
+%   - Reiterate the findings from Model 1 (2-DOF Tilting Nacelle, Rigid Blade).
+%   - Emphasize that this model successfully captured the fundamental rigid-body coupling, demonstrating that a pitching nacelle induces a Coriolis acceleration that drives the rotor speed.
+%   - Note the limitation: Treating the rotor as an infinitely stiff component prevents the model from capturing the structural modal interactions responsible for phenomena like stall-induced vibrations.
 
-This thesis hopes to bridge this gap by establishing a theoretical foundation for the symbolic derivation of wind turbine equations of motion. These equations will subsequently be linearized to perform eigenvalue analysis, allowing for the precise mapping of frequency and damping trends as functions of rotational speed and wind velocity. Ultimately, this work aims to contribute to the safer design of next-generation offshore turbines by demystifying the aeroelastic behavior of their increasingly flexible structures.
+% Summary of Flexible Model Findings:
+%   - Highlight the transition to Model 2 (3-DOF Tilting Nacelle, Flexible Blade) and its significance.
+%   - Explain how introducing a flexible blade degree of freedom, parameterized by generalized mass ($GM_b$) and modal coupling ($M_{r\phi}$), explicitly altered the system's mass matrix ($M$).
+%   - Point to the eigenvalue analysis, which confirmed that the addition of blade flexibility shifted the natural frequency of the entire tower-top assembly, proving that structural modes in wind turbines do not exist in isolation.
+%   - Reiterate the key finding regarding energy transfer: the flexible blade acts as a dynamic energy sink, actively coupling with the nacelle's motion and providing a pathway for aeroelastic resonance.
+
+% The Role of Gyroscopic Coupling:
+%   - Summarize the findings on gyroscopic coupling.
+%   - Explain that the continuous rotation of the massive rotor introduces velocity cross-terms ($\dot{\psi}\dot{\theta}$) that appear as skew-symmetric, speed-dependent entries in the damping matrix ($C_0$).
+%   - Conclude that these terms are mathematically responsible for frequency splitting ("whirling"), causing the natural frequencies of the coupled system to diverge as the turbine speeds up.
+
+% Limitations and the Need for High-Fidelity Tools:
+%   - Address the limitations of the analytical approach, specifically the "frozen-azimuth" assumption required for LTI state-space analysis.
+%   - Briefly mention that while the symbolic models provide crucial physical insights, the rapid divergence of the linear simulations highlights their inability to capture global transient behavior, especially for highly sensitive flexible modes.
+%   - Conclude by acknowledging the continued necessity of high-fidelity simulators like OpenFAST, which can incorporate complete aerodynamic models, multi-blade coordinate transformations, and control systems for comprehensive design load cases.
+
+% Concluding Statement:
+%   - Offer a final thought on the value of the research.
+%   - State that by mathematically deriving and isolating these coupling mechanisms, this thesis contributes to a more transparent understanding of wind turbine aeroelasticity, ultimately supporting the design of safer and more resilient offshore wind energy systems.
 
 \newpage
 \appendix
