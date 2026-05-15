@@ -84,17 +84,17 @@ Furthermore, the power captured by a turbine is directly proportional to the swe
 As a result, small increases in wind speed or blade length yield large gains in power output. Modern offshore turbines feature extraordinarily long blades and towering support structures to maximize energy capture; however, this unprecedented geometric upscaling introduces an engineering challenge in modeling their dynamic behavior. Today's multi-megawatt turbines no longer behave as rigid bodies, rather operating as highly flexible structures. This increased flexibility introduces complex phenomena such as interactions between aerodynamic forces and structural motion this isn't present in rigid systems. Ensuring their stability of these structures against phenomena such as classical flutter and stall-induced vibrations, is a primary design constraint \cite{hansen2007aeroelastic}.
 
 \subsection{Problem Statement: Higher-Order Modes and Analytical Challenges}
-While the isolated fundamental modes of wind turbines (such as pure tower bending or uncoupled blade flapping) are well-documented and standard in design load cases, the complex dynamic coupling between these degrees of freedom remains a critical area of study. As turbines become larger for offshore applications, they lose overall structural rigidity. This causes localized dynamics at the tower-top—specifically the coupling between the nacelle's rigid-body pitching and the continuous flexibility of the blades—to heavily dictate the stability of the structure. The literature identifies that these coupled structural modes can exhibit very low aerodynamic damping margins under specific operational conditions, leading to potential aeroelastic instabilities such as stall-induced vibrations or classical flutter \cite{hansen2007aeroelastic}.
+While the isolated fundamental modes of wind turbines (such as pure tower bending or uncoupled blade flapping) are well-documented and standard in design load cases, the complex dynamic coupling between these degrees of freedom remains a critical area of study. As turbines become larger for offshore applications, they lose overall structural rigidity. This causes localized dynamics at the tower-top—specifically the coupling between the nacelle's rigid-body pitching and the continuous flexibility of the blades—to heavily dictate the stability of the structure. The literature identifies that these coupled structural modes can exhibit very low aerodynamic damping margins under specific operational conditions, leading to instabilities such as stall-induced vibrations or classical flutter \cite{hansen2007aeroelastic}.
 
-The mechanisms governing these coupled interactions are often non-intuitive, defying classical, decoupled Newtonian expectations. They arise from complex interactions with the rotor that vary non-linearly with rotational speed and pitch settings \cite{hansen2007aeroelastic}. Specifically, the continuous rotation of the massive turbine rotor introduces severe gyroscopic couplings that fundamentally alter the system's dynamic response. These gyroscopic effects heavily influence the frequencies of the turbine's yawing and tower-top tilting modes, driving phenomena such as frequency splitting and whirling \cite{hansen2003improved}.
+The mechanisms governing these coupled interactions are often non-intuitive, defying classical, decoupled Newtonian expectations. They arise from complex interactions with the rotor that vary non-linearly with rotational speed and pitch settings \cite{hansen2007aeroelastic}. Specifically, the continuous rotation of the turbine rotor introduces gyroscopic couplings that fundamentally alter the system's dynamic response. These gyroscopic effects heavily influence the frequencies of the turbine's yawing and tower-top tilting modes, driving phenomena such as frequency splitting and whirling \cite{hansen2003improved}.
 
-Currently, the wind energy industry relies heavily on sophisticated, high-fidelity numerical simulators (such as OpenFAST) to analyze these dynamic phenomena. While highly accurate, the highly-discretized, continuous nature of these tools often obscures the underlying mathematical relationships governing the system's behavior. They function essentially as numerical black boxes, with parameters going in and results coming out. This makes it difficult to cleanly isolate the root physical causes of instability when a structural frequency violently shifts or stability margins degrade during a simulation.
+Currently, the wind energy industry relies heavily on sophisticated, high-fidelity numerical simulators (such as OpenFAST) to analyze these dynamic phenomena. While highly accurate, the highly-discretized, continuous nature of these tools often obscures the underlying mathematical relationships governing the system's behavior. They function essentially as numerical black boxes, with parameters going in and results coming out. This makes it difficult to cleanly isolate the root physical causes of instability when a structural frequency shifts or stability margins degrade during a simulation.
 
 \subsection{Research Objectives and Methodological Approach}
 \label{sec:intro_objectives}
-The primary objective of this thesis is to systematically establish reduced-order, analytical wind turbine models of increasing complexity to uncover the fundamental physical trends governing aeroelastic stability. Rather than relying solely on black-box numerical simulations, this research constructs mathematically transparent, "glass-box" models to explicitly isolate and explain non-intuitive dynamic behaviors.
+The primary objective of this thesis is to systematically establish reduced-order, analytical wind turbine models of increasing complexity to evaluate the coupled structural and gyroscopic dynamics that underpin aeroelastic stability. Rather than relying solely on highly discretized numerical simulators, this research constructs a mathematically transparent framework to systematically isolate and analyze complex multibody interactions.
 
-By comparing a 2-DOF rigid-rotor model against a 3-DOF model incorporating a flexible blade, this thesis definitively proves two central findings regarding modern wind turbine stability:
+By comparing a 2-DOF rigid-rotor model against a 3-DOF model incorporating a flexible blade, this thesis demonstrates two important trends regarding modern wind turbine stability:
 \begin{enumerate}
     \item This thesis demonstrates that adding a continuous flexible degree of freedom to the rotor fundamentally alters the inertial coupling of the entire system. The mass matrix derived in this work proves that a flexible blade acts as a dynamic energy sink, subtly shifting the natural frequency of the entire tower-top assembly and providing a mathematical pathway for aeroelastic resonance.
     \item Through the extraction of the linearized damping matrices, this work maps the velocity cross-terms ($\dot{\psi}\dot{\theta}$) generated by the spinning rotor. These terms are shown to be the physical mechanism responsible for frequency splitting (``whirling''), mathematically proving the rotating rotor acts as an active, speed-dependent gyroscopic spring.
@@ -102,7 +102,7 @@ By comparing a 2-DOF rigid-rotor model against a 3-DOF model incorporating a fle
 
 To achieve these findings, this work relies on Lagrangian mechanics. This energy-based methodology utilizes the principle of least action to analyze complex, rotating reference frames much more efficiently than the basic Newtonian approach \cite{Branlard2025notes}. To bridge the gap between continuous flexible structures and discrete mathematics, this project employs the Assumed Modes Method (Ritz-Galerkin) to map the infinite degrees of freedom of a flexible blade onto a reduced set of shape functions \cite{branlard2019flexible}.
 
-Because deriving equations of motion manually becomes intractable for highly coupled rotating systems, the Python module \texttt{sympy.physics.mechanics} is utilized as a symbolic framework to systematically generate, manipulate, and linearize these equations \cite{branlard2022symbolic}. By performing an eigenvalue analysis on the resulting state-space systems, the frequency and damping characteristics are accurately determined, providing a transparent and validated understanding of wind turbine aeroelasticity.
+Because deriving equations of motion manually becomes intractable for highly coupled rotating systems, the Python module \texttt{sympy.physics.mechanics} is utilized as a symbolic framework to systematically generate, manipulate, and linearize these equations \cite{branlard2022symbolic}. By performing an eigenvalue analysis on the resulting state-space systems, the frequency and damping characteristics are accurately determined, providing a transparent and validated understanding of the models.
 
 \section{Wind Turbine Modeling}
 
@@ -146,11 +146,11 @@ BBy integrating the velocity and strain of these differential elements over the 
 Crucially, this Assumed Modes method forms the exact theoretical backbone of industry-standard aeroelastic simulators, such as the ElastoDyn module within the NREL OpenFAST framework. However, while OpenFAST computes these integrals numerically behind the scenes, deriving them using symbolic frameworks allows for the generation of explicit mass and stiffness matrices \cite{branlard2022symbolic}. This symbolic approach removes approximation errors that happen during derivation and provides mathematical expressions to analyze, showing  how structural elasticity couples with rotational kinematics.
 
 \subsection{Aeroelastic Stability, Damping, and Whirling Modes}
-As wind turbine structures become increasingly flexible, they become susceptible to a range of aeroelastic instabilities that can severely compromise structural integrity. Hansen categorizes these instability mechanisms into distinct phenomena, identifying stall-induced vibrations and classical flutter as the two most critical risks for modern turbines \cite{hansen2007aeroelastic}.
+As wind turbine structures become increasingly flexible, they become susceptible to a range of instabilities that can severely compromise structural integrity. Hansen categorizes these instability mechanisms into distinct phenomena, identifying stall-induced vibrations and classical flutter as the two most critical risks for modern turbines \cite{hansen2007aeroelastic}.
 
 Classical flutter is an instability driven by the coupling of flapwise bending and torsional twisting, primarily influenced by the blade tip speed, torsional stiffness, and the chordwise position of the center of gravity \cite{hansen2007aeroelastic}. Conversely, stall-induced vibrations are driven by variations in the aerodynamic forces. While blade modes typically benefit from high aerodynamic damping due to their large surface area interacting with the airflow, tower modes present a unique challenge. In conditions where the turbine enters aerodynamic stall, the effective damping can become negative. Without sufficient structural damping to counteract this, self-excited vibrations grow in amplitude until structural failure occurs \cite{hansen2007aeroelastic}.
 
-Analyzing the stability of these higher-order modes requires an understanding of how they interact with the rotating rotor. When a flexible tower bends, it does not oscillate in isolation. The continuous rotation of the massive rotor creates gyroscopic couplings that split the tower's natural frequencies, a phenomenon known as "whirling." This interaction results in both a forward whirl (where the natural frequency increases with rotor speed) and a backward whirl (where the frequency decreases) \cite{hansen2003improved}.
+Analyzing the stability of these higher-order modes requires an understanding of how they interact with the rotating rotor. When a flexible tower bends, it does not oscillate in isolation. The continuous rotation of the rotor creates gyroscopic couplings that split the tower's natural frequencies, a phenomenon known as "whirling." This interaction results in both a forward whirl (where the natural frequency increases with rotor speed) and a backward whirl (where the frequency decreases) \cite{hansen2003improved}.
 
 This frequency splitting is highly sensitive to the rotational speed ($\Omega$) of the turbine. Capturing these non-linear dependencies accurately is essential for predicting the response of the structure. The symbolic derivation and linearization of the EOMs developed in this thesis allow for a clear, analytical mapping of whirling frequencies and damping characteristics.
 
@@ -239,6 +239,30 @@ This an eigenvalue analysis framework was formulated to extract the natural freq
 To achieve the objectives of this thesis, I used the sympy library in Python to perform the symbolic derivation of the equations of motion. This process began with a familiarization of the library with progressively more complex systems. A systematic approach is used to ensure the accuracy of the derivations, starting with simple systems and building up to more complicated models that incorporate flexibility and rotation. This methodical approach allows for the validation of the framework at each step.
 
 The equations of motion for five models were generated. These models include the \hyperref[app:simple_pendulum]{Simple Pendulum}, a chaotic \hyperref[app:double_pendulum]{Double Pendulum}, a 2-DOF \hyperref[app:pendulum_cart]{Single Blade Pendulum on a Cart}, a \hyperref[app:fixed_nacelle_flex_blade]{Fixed Nacelle with a Flexible Rotating Blade}, and a \hyperref[app:flex_tower_rigid_blade]{Flexible Tower with a Rotating Rigid Blade}. Following validation, the pipeline that was developed while deriving these models was applied to derive two additional models. These models were the \hyperref[sec:tilting_nacelle_rigid_blade]{Tilting Nacelle with a Rigid Rotating Blade} and the \hyperref[sec:tilting_nacelle_flex_blade]{Tilting Nacelle with a Flexible Rotating Blade}. The following sections provide a detailed description of the derivation process for each of these models.
+
+\subsection{Model Assumptions and Scope}\label{sec:assumptions}
+To cleanly isolate the fundamental structural and gyroscopic couplings of the turbine system, several targeted simplifications were applied to the analytical framework. Explicitly defining these assumptions is critical for understanding the physical and mathematical boundaries of the models presented in this thesis.
+
+\subsubsection*{Structural and Kinematic Assumptions}
+\begin{itemize}
+    \item The rotor is modeled as a single equivalent blade, which captures the primary rotational inertia and flexible dynamics without the redundant mathematical complexity of a full three-bladed rotor.
+    \item The hub connecting the blade to the nacelle is assumed to be perfectly rigid, isolating all flexibility to the continuous blade span.
+    \item The flexible blade is modeled under standard Euler-Bernoulli assumptions, treating it as a slender beam. Consequently, shear deformations and torsion-bending couplings are assumed negligible, restricting the continuous deformation to pure flapwise bending.
+    \item The infinite degrees of freedom inherent to a continuous flexible body are reduced using the Assumed Modes Method. The model truncates higher-order dynamics, assuming the blade's spatial deformation is fully characterized by its fundamental first-order shape function.
+\end{itemize}
+
+\subsubsection*{Aerodynamic and Operational Scope}
+\begin{itemize}
+    \item The current framework acts strictly as a structural plant model. It contains no external aerodynamic wind loads (e.g., Blade Element Momentum theory) and therefore features no aerodynamic damping. System stability is dictated entirely by structural and gyroscopic damping.
+    \item The turbine operates in an open-loop condition with no pitch control and no generator torque applied to the drive shaft. The intentional omission of a restorative generator torque directly yields the static rigid-body instability of the rotor discussed in the final eigenvalue analysis.
+\end{itemize}
+
+\subsubsection*{Mathematical and Analytical Reductions}
+\begin{itemize}
+    \item To extract natural frequencies and damping ratios, the complex nonlinear Equations of Motion (EOMs) are linearized using small-angle approximations about a specified steady-state operating point.
+    \item The system's rotational dynamics are evaluated by locking the rotor at a specific azimuthal angle ($\psi_0$) to yield a Linear Time-Invariant (LTI) system which is more computationally efficient.
+    \item Because the framework utilizes a single-blade approximation evaluated at a frozen azimuth, it inherently bypasses the need for the Multi-Blade Coordinate (MBC / Coleman) transformation or Floquet theory, which are traditionally required to resolve the periodic coefficients of a continuous three-bladed rotor.
+\end{itemize}
 
 \subsection{Tilting Nacelle, Rigid Blade}\label{sec:tilting_nacelle_rigid_blade}
 \subsubsection{Model Description and Degrees of Freedom}
@@ -342,6 +366,8 @@ The equations of motion for the multi-body system are derived using the symbolic
     \label{eq:model1_M_nonlinear}
 \end{equation}
 
+Physically, the linearized mass matrix $\boldsymbol{M}$ for the 2-DOF rigid model reveals the fundamental inertial coupling between the nacelle's pitching motion ($\theta$) and the rotor's azimuth ($\psi$). The non-zero off-diagonal terms demonstrate that any angular acceleration of the tower-top instantly exerts an inertial torque on the rotor shaft. Because this model assumes a perfectly rigid blade, all kinetic energy transferred from the nacelle is fully absorbed by the unyielding rigid-body inertia. These coupling terms are dictated entirely by the fixed geometric offsets (such as hub overhang, $X_h$, and the blade's center of mass, $Z_b$).
+
 \begin{equation}
     F(q, \dot{q}) = \begin{bmatrix} F_{\theta} \\ F_{\psi} \end{bmatrix}
     \label{eq:model1_F_nonlinear}
@@ -361,7 +387,7 @@ where the individual forcing terms for the tilt ($F_{\theta}$) and azimuth ($F_{
     F_{\psi} = \sin{\psi} \left[ \dot{\theta}^2 \cos{\psi}(J_{zz B} - J_{yy B} - m_b Z_b^2) - Z_b Z_h m_b \dot{\theta}^2 + Z_b g m_b \cos{\theta} \right]
 \end{equation*}
 
-These symbolic matrices explicitly reveal the massive 3D kinematic coupling inherent in the system. The off-diagonal mass entry, $X_h Z_b m_b \sin{\psi}$, proves that a purely rigid blade still exerts an inertial torque on the tower solely based on its azimuthal position. Furthermore, the $F_{\theta}$ vector
+These symbolic matrices explicitly reveal the 3D kinematic coupling inherent in the system. The off-diagonal mass entry, $X_h Z_b m_b \sin{\psi}$, proves that a purely rigid blade still exerts an inertial torque on the tower solely based on its azimuthal position. Furthermore, the $F_{\theta}$ vector
 
 \subsubsection{Nonlinear System Response}
 \label{sec:model1_nonlinear}
@@ -405,6 +431,8 @@ where $\delta q = [\delta\theta,\, \delta\psi]^T$. Evaluating the Jacobian of th
     \end{bmatrix}
 \end{equation}
 
+In the absence of external aerodynamic or structural damping, the $\boldsymbol{C}_{lin}$ matrix for the 2-DOF system is dominated by skew-symmetric, velocity-dependent terms. These terms represent the Coriolis and gyroscopic forces inherent to the spinning reference frame. Physically, the massive rotating blade acts as a gyroscope mounted atop the tower; any pitching velocity ($\dot{\theta}$) forced upon the nacelle induces a reactive torque. This specific mechanism mathematically explains why the baseline tower pitching frequency shifts prominently as the rotor speed ($\Omega$) increases, independent of any aeroelastic or flexible-body effects.
+
 \begin{equation}
     \label{eq:linear_K0}
     K_0 = \begin{bmatrix}
@@ -415,7 +443,7 @@ where $\delta q = [\delta\theta,\, \delta\psi]^T$. Evaluating the Jacobian of th
 
 These matrices provide direct mathematical insight into the physics of the wind turbine. The mass matrix ($M_0$) contains the generalized inertias, but notably features an off-diagonal term ($X_h Z_b m_b \sin\psi$) explicitly coupling the nacelle tilt acceleration with the rotor's azimuthal acceleration based on blade position.
 
-The damping matrix ($C_0$) isolates the structural tower damping ($c_t$) alongside velocity-dependent Coriolis and gyroscopic terms proportional to the rotor speed $\Omega$. These off-diagonal elements are the mathematical mechanism responsible for the energy transfer observed in the nonlinear time-domain response. It is important to note that the damping matrix $\boldsymbol{C}$ derived in this scope contains only structural damping ($c_t$, $c_b$) and the inherent gyroscopic damping generated by the spinning rotor. Aerodynamic damping, which acts as the primary stabilizing (or destabilizing) force in true aeroelastic systems, is omitted to isolate and validate the baseline structural kinematics. Finally, the stiffness matrix ($K_0$) is comprised of the structural stiffness ($k_t$), gravitational destiffening (the negative $g$ terms representing the tower-top mass pulling the nacelle away from vertical equilibrium), and a stiffening term proportional to $\Omega^2$.
+The damping matrix ($C_0$) isolates the structural tower damping ($c_t$) alongside velocity-dependent Coriolis and gyroscopic terms proportional to the rotor speed $\Omega$. These off-diagonal elements are the mathematical mechanism responsible for the energy transfer observed in the nonlinear time-domain response. It is important to note that the damping matrix $\boldsymbol{C}$ derived in this scope contains only structural damping ($c_t$, $c_b$) and the inherent gyroscopic damping generated by the spinning rotor. Aerodynamic damping, which acts as the primary stabilizing (or destabilizing) force in aeroelastic systems, is omitted to isolate and validate the baseline structural kinematics. Finally, the stiffness matrix ($K_0$) is comprised of the structural stiffness ($k_t$), gravitational destiffening (the negative $g$ terms representing the tower-top mass pulling the nacelle away from vertical equilibrium), and a stiffening term proportional to $\Omega^2$.
 
 To extract the system's natural frequencies and damping ratios, the second-order linear system is converted into a first-order state-space form, $\dot{x} = A x$, where the state vector is $x = [\delta\theta, \delta\psi, \delta\dot{\theta}, \delta\dot{\psi}]^T$. The top half of the $A$ matrix simply establishes the kinematic relationship between positions and their respective velocities, meaning the derivative of position is velocity. The bottom half contains the specific dynamics, encapsulating how the system's mass, damping, and stiffness matrices dictate acceleration.The structure of the $A$ matrix is given by:$$A = \begin{bmatrix} 0 & I \\ -M^{-1}K & -M^{-1}C \end{bmatrix}$$This matrix serves as the foundation for performing eigenvalue analysis, which subsequently uncovers the natural frequencies and damping properties of the coupled multi-body system. Utilizing the parameters from Table~\ref{tab:model1_params} evaluated at an operating speed of $\Omega = 1.5$\,rad/s, the numerical $A$ matrix is evaluated as:
 
@@ -431,8 +459,8 @@ To extract the system's natural frequencies and damping ratios, the second-order
 Solving the eigenvalue problem $\det(A - \lambda I) = 0$ yields the fundamental modes of the coupled system at this specific rotor speed:
 
 \begin{itemize}
-    \item \textbf{Mode 1 (Nacelle Tilt):} $\lambda = -0.0381 \pm 1.1433i$. This complex conjugate pair represents an underdamped oscillatory mode with a damped natural frequency of $\omega_n = 0.1821$\,Hz and a stable structural damping ratio of $\zeta = 3.33\%$.
-    \item \textbf{Mode 2 (Rotor Azimuth):} $\lambda_{2,3} = \pm 1.0960$. This yields purely real eigenvalues, one stable ($\lambda = -1.0960$) and one unstable ($\lambda = +1.0960$).
+    \item Mode 1 (Nacelle Tilt): $\lambda = -0.0381 \pm 1.1433i$. This complex conjugate pair represents an underdamped oscillatory mode with a damped natural frequency of $\omega_n = 0.1821$\,Hz and a stable structural damping ratio of $\zeta = 3.33\%$.
+    \item Mode 2 (Rotor Azimuth): $\lambda_{2,3} = \pm 1.0960$. This yields purely real eigenvalues, one stable ($\lambda = -1.0960$) and one unstable ($\lambda = +1.0960$).
 \end{itemize}
 
 The presence of a positive real eigenvalue in Mode 2 indicates a static instability associated with the azimuth degree of freedom. Physically, because this linear model is evaluated at a "frozen azimuth" without a regulating generator torque to maintain the speed $\Omega$, the heavy blade acts as an inverted pendulum under the influence of gravity. A perturbation causes the blade to continuously accelerate downward away from the $\psi_0$ equilibrium. This  divergence aligns with the behavior observed in Section~\ref{sec:model1_validation}, explaining why the linear state-space approximation eventually drifts from the nonlinear baseline over time.
@@ -442,14 +470,14 @@ The presence of a positive real eigenvalue in Mode 2 indicates a static instabil
 
 To observe the isolated behavior of the LTI approximation, the linearized state-space system defined by the $A$ matrix was simulated under identical initial conditions ($\theta = 5^\circ$) using a numerical ODE solver. The time-domain response of this purely linear system is presented in Fig.~\ref{fig:model1_linear_response}.
 
-\begin{figure}[htbp]
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.85\textwidth]{OB_Rigid_Linear_Response.png}
     \caption{Time-domain response of the isolated LTI state-space model given a $5^\circ$ initial tilt perturbation. Unlike the nonlinear model, the linear approximation exhibits a decoupled response where energy does not transfer into the rotor speed.}
     \label{fig:model1_linear_response}
 \end{figure}
 
-The resulting trajectory highlights the limitations in linearizing highly coupled multibody systems. In the full nonlinear model (Fig.~\ref{fig:model1_nonlinear_baseline}), the forward pitching velocity of the nacelle transferred potential energy into the rotor via Coriolis accelerations, causing a measurable spike in rotor speed. However, in this LTI simulation, the rotor speed remains entirely unaffected by the violent $5^\circ$ pitching motion of the nacelle.
+The resulting trajectory highlights the limitations in linearizing highly coupled multibody systems. In the full nonlinear model (Fig.~\ref{fig:model1_nonlinear_baseline}), the forward pitching velocity of the nacelle transferred potential energy into the rotor via Coriolis accelerations, causing a measurable spike in rotor speed. However, in this LTI simulation, the rotor speed remains entirely unaffected by the $5^\circ$ pitching motion of the nacelle.
 
 This decoupling occurs because the LTI system evaluates the Jacobian matrices at a single, static equilibrium point (the "frozen azimuth" assumption, $\psi_0 = 0^\circ$). By freezing the state, the highly dynamic, position-dependent velocity cross-terms ($\dot{\theta}\dot{\psi}$) that govern energy transfer are reduced to constants or eliminated. The linear model treats the nacelle tilt as a decoupled, damped harmonic oscillator governed by constant tower stiffness and structural damping, emphasizing that while state-space matrices are excellent tools for local frequency and stability analysis, they cannot reliably simulate transient behavior.
 
@@ -457,19 +485,20 @@ This decoupling occurs because the LTI system evaluates the Jacobian matrices at
 \label{sec:model1_validation}
 To ensure the linearized state-space matrix reflects the local dynamics of the physical system, the linear ODEs ($\dot{x} = Ax$) were integrated and superimposed over the nonlinear baseline. Both systems were subjected to an identical $1^\circ$ initial tilt perturbation to evaluate their response. Fig.~\ref{fig:model1_validation} illustrates this comparative time-domain analysis.
 
-\begin{figure}[htbp]
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.85\textwidth]{OB_Rigid_Validation_Comparison.png}
     \caption{Transient overlap comparison between the fully nonlinear model and the linearized LTI state-space model under a $1^\circ$ initial perturbation. The divergence at higher time values highlights the mathematical boundary of the frozen-azimuth assumption.}
     \label{fig:model1_validation}
 \end{figure}
 
+
 The close overlap in the transient region ($t < 0.2$\,s) proves the symbolic Jacobian derivation captured the 3D rigid-body coupling terms. As expected from an LTI system utilizing a "frozen-azimuth" approximation ($\psi_0 = 0^\circ$), the linear trajectory smoothly diverges from the nonlinear response as time progresses. This divergence represents the mathematical boundary of the local small-angle assumption: as the true blade rotates away from the prescribed equilibrium, the constant-coefficient matrices lose their accuracy. This emphasizes the necessity of evaluating the linear system across a range of azimuth angles or using multi-blade coordinate transformations for full-rotor stability analyses.
 
 \subsubsection{Key Findings from Model 1}
 \label{sec:model1_findings}
 
-The 2-DOF rigid blade model successfully isolates the rigid-body interactions inherent to a wind turbine assembly. Through nonlinear time-domain simulation, the model demonstrates the act of a nacelle pitching forward introduces accelerations that drive the rotor speed. This confirms aerodynamic thrust is not the sole governor of rotor dynamics during turbulent pitching events; massive 3D kinematic coupling plays a critical role. Furthermore, the near-perfect transient overlap between the simulated trajectories successfully validates the mathematical Jacobian derivation and linearization methodology.
+The 2-DOF rigid blade model successfully isolates the rigid-body interactions inherent to a wind turbine assembly. Through nonlinear time-domain simulation, the model demonstrates the act of a nacelle pitching forward introduces accelerations that drive the rotor speed. This confirms aerodynamic thrust is not the sole governor of rotor dynamics during turbulent pitching events; 3D kinematic coupling plays a critical role. Furthermore, the near-perfect transient overlap between the simulated trajectories successfully validates the mathematical Jacobian derivation and linearization methodology.
 
 However, by modeling the rotor as infinitely stiff, this model acts effectively as a rigid flywheel. It fails to capture the aeroelastic structural flexibility that causes modern, multi-megawatt turbines to suffer from destructive modal interactions, such as stall-induced vibrations. This fundamental physical limitation explicitly motivates the expansion of the kinematic framework to include a flexible blade degree of freedom, presented in the following section.
 
@@ -599,6 +628,8 @@ The non-zero entries of the symmetric mass matrix, which govern the instantaneou
     M_{33} & = GM_{b}
 \end{align*}
 
+When compared to the rigid baseline, the presence of new off-diagonal terms in the 3-DOF mass matrix reveals a direct inertial coupling between the nacelle tilt ($\theta$) and the blade flapwise bending ($q$). This mathematical relationship indicates that pitching the support structure forces the continuous blade to deform out-of-plane. By integrating the generalized modal mass ($GM_b$), the matrix demonstrates that blade flexibility acts as a dynamic buffer. This coupling fundamentally lowers the effective stiffness of the tower-top, yielding lower fundamental system frequencies than a rigid-body assumption would predict.
+
 The individual forcing terms for the tilt ($F_{\theta}$), azimuth ($F_{\psi}$), and blade bending ($F_{q}$) degrees of freedom contain the structural restoring forces alongside the complex gyroscopic and Coriolis accelerations:
 
 \begin{align*}
@@ -653,6 +684,8 @@ To analyze the system's modal frequencies and stability limits, the nonlinear ma
     \end{bmatrix}
 \end{equation}
 
+An examination of the 3-DOF $\boldsymbol{C}_{lin}$ matrix highlights how blade flexibility complicates the rotational kinematics. As the rotor speed ($\Omega$) increases, the gyroscopic cross-terms rigidly couple the out-of-plane continuous bending with the in-plane azimuthal rotation, continuously transferring energy between them. This specific multibody interaction drives the 'frequency splitting' phenomenon—where the localized flapwise mode diverges into distinct forward and backward whirling frequencies at higher operational RPMs.
+
 \begin{equation}
     \label{eq:linear2_K0}
     K_0 = \begin{bmatrix}
@@ -679,20 +712,20 @@ To extract the physical frequencies, the system is converted into a first-order 
 Solving the eigenvalue problem for this matrix reveals exactly how structural flexibility alters the dynamic response. The fundamental modes are:
 
 \begin{itemize}
-    \item \textbf{Mode 1 (Blade Flapwise Bending):} $\lambda = -0.0046 \pm 37.4212i$. This mode oscillates at a highly underdamped natural frequency of $f_n = 5.95$\,Hz ($\zeta = 0.01\%$).
-    \item \textbf{Mode 2 (Nacelle Tilt):} $\lambda = -0.0381 \pm 1.1432i$. This tower-top mode oscillates at $f_n = 0.1821$\,Hz with a damping ratio of $\zeta = 3.33\%$.
-    \item \textbf{Mode 3 (Rotor Azimuth):} $\lambda = 1.0960$. As seen in the rigid model, the frozen-azimuth approximation forces the rotor into a state of exponential divergence (an inverted pendulum falling under gravity), resulting in a purely real, positive eigenvalue.
+    \item Mode 1 (Blade Flapwise Bending): $\lambda = -0.0046 \pm 37.4212i$. This mode oscillates at a highly underdamped natural frequency of $f_n = 5.95$\,Hz ($\zeta = 0.01\%$).
+    \item Mode 2 (Nacelle Tilt): $\lambda = -0.0381 \pm 1.1432i$. This tower-top mode oscillates at $f_n = 0.1821$\,Hz with a damping ratio of $\zeta = 3.33\%$.
+    \item Mode 3 (Rotor Azimuth): $\lambda = 1.0960$. As seen in the rigid model, the frozen-azimuth approximation forces the rotor into a state of exponential divergence (an inverted pendulum falling under gravity), resulting in a purely real, positive eigenvalue.
 \end{itemize}
 
 This positive real eigenvalue ($\lambda \approx +1.096$) correctly identifies a static instability in the rotor azimuth degree of freedom. Physically, this is the expected behavior of a single heavy blade frozen at an azimuth of $\psi=0^\circ$ (an inverted pendulum) without a restorative generator torque or aerodynamic drag to hold it in place. Because the structural stiffness of the tower ($k_t$) and blade ($k_b$) are orders of magnitude larger than the gravitational overturning moment, the natural frequencies of the nacelle tilt ($\theta$) and blade flap ($q$) can still be accurately extracted from the complex conjugate eigenvalue pairs without being corrupted by the rotor's slow rigid-body divergence.
 
-Crucially, the addition of the flexible blade successfully captures modal interactions. While the rigid blade model (Section~\ref{sec:model1_linearization}) predicted a rigid tilt eigenvalue of $\lambda_{rigid} = -0.0381 \pm 1.1433i$, the introduction of the blade's generalized mass ($GM_b$) and modal coupling ($M_{r\phi}$) subtly shifts this fundamental frequency. Although the shift at this specific azimuth is small, the mathematical framework definitively proves that the tower mode does not exist in isolation; it is actively coupled to, and altered by, the flexural state of the rotor.
+Crucially, the addition of the flexible blade successfully captures modal interactions. While the rigid blade model (Section~\ref{sec:model1_linearization}) predicted a rigid tilt eigenvalue of $\lambda_{rigid} = -0.0381 \pm 1.1433i$, the introduction of the blade's generalized mass ($GM_b$) and modal coupling ($M_{r\phi}$) subtly shifts this fundamental frequency. Although the shift at this specific azimuth is small, the mathematical framework demonstrates the tower mode does not exist in isolation; it is actively coupled to, and altered by, the flexural state of the rotor.
 
 \subsubsection{Linearized System Simulation}
 \label{sec:model2_linear_sim}
 To evaluate the isolated behavior of the 3-DOF LTI approximation, the linearized state-space system defined by the $A$ matrix was simulated using identical initial conditions ($\theta = 5^\circ$). The time-domain response of this purely linear system is presented in Fig.~\ref{fig:model2_linear_response}.
 
-\begin{figure}[htbp]
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.85\textwidth]{OB_Flex_Linear_Response.png}
     \caption{Time-domain response of the isolated 3-DOF LTI state-space model given a $5^\circ$ initial tilt perturbation. The system captures the high-frequency structural coupling between the blade and the nacelle, but the rotor speed remains entirely decoupled.}
@@ -708,7 +741,7 @@ However, the macroscopic energy transfer remains restricted. Just as observed in
 
 To evaluate the mathematical boundaries of the frozen-azimuth approximation for highly flexible systems, the $6 \times 6$ linear state-space trajectory was superimposed over the nonlinear baseline. Fig.~\ref{fig:model2_validation} illustrates this comparative time-domain analysis under an identical $1^\circ$ initial tilt perturbation.
 
-\begin{figure}[htbp]
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.85\textwidth]{OB_Flex_Validation_Comparison.png} % Ensure filename matches repo exactly
     \caption{Transient overlap comparison between the fully nonlinear 3-DOF model and the linearized state-space model under a $1^\circ$ initial perturbation. The flexible blade mode (bottom) exhibits rapid divergence due to its high sensitivity to the instantaneous rotor position.}
@@ -722,7 +755,7 @@ The resulting overlap plot confirms the local accuracy of the Jacobian derivatio
 
 The 3-DOF flexible blade model successfully demonstrates that aeroelastic structures cannot be accurately simulated using rigid-body mechanics alone. By introducing a continuous modal deflection coordinate, this model analytically proved that a wind turbine blade does not act simply as a rigid flywheel; instead, it acts as a highly dynamic energy sink. Potential energy from the tower is actively siphoned through velocity cross-terms into high-frequency flapwise vibrations.
 
-Furthermore, the eigenvalue analysis confirmed the central hypothesis of this thesis: the structural modes of a wind turbine do not exist in isolation. The addition of the blade's generalized mass and rotational modal coupling subtly, but definitively, altered the fundamental natural frequency of the entire tower-top assembly. This mathematical proof highlights why standard industry simulators must utilize fully flexible, coupled multi-body kinematics to avoid catastrophic aeroelastic resonance and stall-induced vibrations in modern offshore deployments.
+Furthermore, the eigenvalue analysis confirmed the central hypothesis of this thesis: the structural modes of a wind turbine do not exist in isolation. The addition of the blade's generalized mass and rotational modal coupling altered the natural frequency of the tower-top assembly. This mathematical proof highlights why standard industry simulators must utilize fully flexible, coupled multi-body kinematics to avoid catastrophic aeroelastic resonance and stall-induced vibrations in modern offshore deployments.
 
 \section{Discussion} \label{sec:discussion}
 
@@ -741,16 +774,16 @@ However, in Model 2, the discretization of the flexible blade via the assumed mo
     M_{13} = M_{\phi} Z_{h} + M_{r\phi} \cos{\psi}
 \end{equation}
 
-This single mathematical term, representing the linear ($M_{\phi}$) and rotational ($M_{r\phi}$) modal coupling, explicitly links the nacelle tilt acceleration ($\ddot{\theta}$) directly to the flapwise blade acceleration ($\ddot{q}$). Physically, this proves that a flexible blade does not simply rest on top of the tower; it acts as a dynamic energy sink. When the nacelle pitches, the acceleration forces the continuous mass of the blade to deflect. This modal interaction, confirmed by the high-frequency vibrations in the transient simulation (Fig.~\ref{fig:model2_nonlinear_baseline}), subtly shifts the natural frequency of the tower mode. As established in the literature, this mathematical coupling is the root cause of the non-intuitive damping behaviors observed in industry black-box simulators \cite{hansen2003improved}. If the blade's natural frequency approaches that of the tower, this off-diagonal term acts as a conduit for devastating aeroelastic resonance.
+This single mathematical term, representing the linear ($M_{\phi}$) and rotational ($M_{r\phi}$) modal coupling, explicitly links the nacelle tilt acceleration ($\ddot{\theta}$) directly to the flapwise blade acceleration ($\ddot{q}$). Physically, this proves that a flexible blade does not simply rest on top of the tower; it acts as a dynamic energy sink. When the nacelle pitches, the acceleration forces the continuous mass of the blade to deflect. This modal interaction, confirmed by the high-frequency vibrations in the transient simulation (Fig.~\ref{fig:model2_nonlinear_baseline}), subtly shifts the natural frequency of the tower mode. As established in the literature, this mathematical coupling is the root cause of the non-intuitive damping behaviors observed in industry black-box simulators \cite{hansen2003improved}. If the blade's natural frequency approaches that of the tower, this off-diagonal term acts as a conduit for aeroelastic resonance.
 
 \subsection{Gyroscopic Coupling and Energy Transfer}
 \label{sec:discussion_gyroscopic}
 
-A secondary objective of this analysis was to determine how gyroscopic effects dynamically dictate the frequencies of a wind turbine's macroscopic modes. In standard structural analysis, modes are often treated as independent orthogonal components. However, the continuous rotation of a massive wind turbine rotor fundamentally breaks this independence through gyroscopic coupling.
+A secondary objective of this analysis was to determine how gyroscopic effects dynamically dictate the frequencies of a wind turbine's macroscopic modes. In standard structural analysis, modes are often treated as independent orthogonal components. However, the continuous rotation of a wind turbine rotor fundamentally breaks this independence through gyroscopic coupling.
 
 This coupling is physically driven by the conservation of angular momentum. When the heavy rotor is spinning (generating a large angular momentum vector) and the nacelle suddenly pitches forward due to a gust, the system experiences a forced change in the direction of that angular momentum vector. This action generates an immediate gyroscopic reaction torque.
 
-This phenomenon is explicitly proven in both the 2-DOF and 3-DOF symbolic derivations. In the nonlinear forcing vectors ($F$), massive velocity cross-terms emerge, such as the Coriolis acceleration term $\dot{\psi}\dot{\theta}\sin(2\psi)(J_{yy B} - J_{zz B} + m_b Z_b^2)$. The presence of both $\dot{\psi}$ (rotor speed) and $\dot{\theta}$ (nacelle pitch velocity) in a single multiplied term proves that motion in one degree of freedom actively forces acceleration in the other. This algebraic relationship is validated by the nonlinear time-domain responses (Figs.~\ref{fig:model1_nonlinear_baseline} and \ref{fig:model2_nonlinear_baseline}), which visually capture this energy transfer: a perturbation entirely in the tilt angle actively accelerates the rotor as the system seeks to balance the internal gyroscopic torques.
+This phenomenon is explicitly proven in both the 2-DOF and 3-DOF symbolic derivations. In the nonlinear forcing vectors ($F$), velocity cross-terms emerge, such as the Coriolis acceleration term $\dot{\psi}\dot{\theta}\sin(2\psi)(J_{yy B} - J_{zz B} + m_b Z_b^2)$. The presence of both $\dot{\psi}$ (rotor speed) and $\dot{\theta}$ (nacelle pitch velocity) in a single multiplied term proves that motion in one degree of freedom actively forces acceleration in the other. This algebraic relationship is validated by the nonlinear time-domain responses (Figs.~\ref{fig:model1_nonlinear_baseline} and \ref{fig:model2_nonlinear_baseline}), which visually capture this energy transfer: a perturbation entirely in the tilt angle actively accelerates the rotor as the system seeks to balance the internal gyroscopic torques.
 
 When the system is linearized to evaluate stability near an operating point, these dynamic velocity cross-terms map directly into the damping matrix ($C_0$). As derived in Section \ref{sec:model2_linearization}, the off-diagonal entries of the damping matrix contain terms that scale linearly with the rotor speed ($\pm J\Omega\sin(2\psi)$). Because these terms are skew-symmetric and proportional to $\Omega$, they cause the natural frequencies of the coupled system to diverge as the turbine speeds up—a phenomenon classically known as frequency splitting or ``whirling.'' The symbolic framework successfully isolates the mathematical root of this phenomenon: the rotating rotor acts as an active, speed-dependent gyroscopic spring that stiffens one mode branch (forward whirl) while softening the other (backward whirl).
 
@@ -772,11 +805,11 @@ Finally, the assumed modes method in this thesis utilized only a single flapwise
 
 The increasing scale and operational deployment of modern offshore wind turbines makes understanding their behavior crucial. As these structures grow larger, they inherently become more flexible, blurring the lines between rigid-body kinematics and structural dynamics. The primary objective of this thesis was to construct transparent, symbolic analytical models—leveraging Lagrangian mechanics and the assumed modes method—to reveal the physical mechanisms driving instability, moving beyond the "black-box" numerical approaches typically employed in industry.
 
-Through the development and simulation of the 2-DOF Rigid Blade model, this work successfully isolated the fundamental rigid-body coupling mechanisms inherent to a tower-top assembly. The symbolic derivation and resulting time-domain simulations demonstrated that a pitching nacelle induces substantial Coriolis accelerations that actively drive the rotor speed. This finding is critical, as it mathematically proves that aerodynamic thrust is not the sole governor of rotor dynamics during turbulent events; massive 3D kinematic coupling plays a dominant role in energy transfer. However, the rigid model’s limitation became equally clear: by treating the rotor as an infinitely stiff component, it failed to capture the structural modal interactions responsible for complex phenomena like stall-induced vibrations.
+Through the development and simulation of the 2-DOF Rigid Blade model, this work successfully isolated the fundamental rigid-body coupling mechanisms inherent to a tower-top assembly. The symbolic derivation and resulting time-domain simulations demonstrated that a pitching nacelle induces substantial Coriolis accelerations that actively drive the rotor speed. This finding is critical, as it mathematically proves that aerodynamic thrust is not the sole governor of rotor dynamics during turbulent events; 3D kinematic coupling plays a dominant role in energy transfer. However, the rigid model’s limitation became equally clear: by treating the rotor as an infinitely stiff component, it failed to capture the structural modal interactions responsible for complex phenomena like stall-induced vibrations.
 
-This limitation motivated the expansion into the 3-DOF Flexible Blade model. By introducing a continuous modal deflection coordinate parameterized by a generalized mass ($GM_b$) and a rotational modal coupling integral ($M_{r\phi}$), the system's mass matrix was explicitly altered. The subsequent eigenvalue analysis confirmed the central hypothesis of this research: structural modes in wind turbines do not exist in isolation. The addition of blade flexibility subtly but definitively shifted the natural frequency of the entire tower-top assembly. Furthermore, nonlinear simulations visually confirmed that the flexible blade acts as a dynamic energy sink, actively coupling with the nacelle's motion and providing a pathway for structural resonance.
+This limitation motivated the expansion into the 3-DOF Flexible Blade model. By introducing a continuous modal deflection coordinate parameterized by a generalized mass ($GM_b$) and a rotational modal coupling integral ($M_{r\phi}$), the system's mass matrix was explicitly altered. The subsequent eigenvalue analysis confirmed the central hypothesis of this research: structural modes in wind turbines do not exist in isolation. The addition of blade flexibility shifted the natural frequency of the entire tower-top assembly. Furthermore, nonlinear simulations visually confirmed that the flexible blade acts as a dynamic energy sink, actively coupling with the nacelle's motion and providing a pathway for structural resonance.
 
-Finally, this symbolic framework explicitly mapped the role of gyroscopic coupling. The continuous rotation of the massive rotor introduces velocity cross-terms ($\dot{\psi}\dot{\theta}$) that manifest as skew-symmetric, speed-dependent entries in the linearized damping matrix ($C_0$). These terms are mathematically responsible for frequency splitting, or "whirling," causing the natural frequencies of the coupled system to diverge as the turbine speeds up.
+Finally, this symbolic framework explicitly mapped the role of gyroscopic coupling. The continuous rotation of the rotor introduces velocity cross-terms ($\dot{\psi}\dot{\theta}$) that manifest as skew-symmetric, speed-dependent entries in the linearized damping matrix ($C_0$). These terms are mathematically responsible for frequency splitting, or "whirling," causing the natural frequencies of the coupled system to diverge as the turbine speeds up.
 
 While the analytical approach provides unparalleled transparency, it is bounded by the "frozen-azimuth" assumption required for LTI state-space analysis. The rapid divergence of the linear simulations, particularly for highly sensitive flexible modes, highlights their inability to capture global transient behavior. Consequently, while these symbolic models provide crucial physical insights, the utilization of high-fidelity simulators like OpenFAST—capable of incorporating complete aerodynamic models and multi-blade coordinate transformations—remains a necessity for comprehensive design load cases.
 
@@ -1156,4 +1189,5 @@ The equations of motion were derived by considering the kinetic energy of the fl
 % --- Bibliography Section ---
 \newpage
 \bibliography{references}
+
 \end{document}
